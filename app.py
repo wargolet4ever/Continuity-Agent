@@ -198,7 +198,7 @@ def do_create(idea: str, shot_count: int, state: dict[str, Any]):
             else "每个镜头的状态都是待外部生成——公开环境不接入任何视频生成平台。"
         )
         + "\n\n---\n\n### 👉 下一步\n\n"
-        "把下面每一镜的 prompt 拿去即梦／可灵生成，然后回到 **「检查素材」** 页把结果传上来——"
+        "把下面每一镜的 prompt 拿去任意视频模型生成，然后回到 **「检查素材」** 页把结果传上来——"
         "**我会用刚刚给你做的这份规则去查**，而不是拿一套通用标准。"
     )
 
@@ -713,7 +713,7 @@ with gr.Blocks(title="Passenger Zero · 连续性引擎", theme=gr.themes.Soft()
         "| | 做什么 | 在哪做 |\n"
         "|---|---|---|\n"
         "| ① | 一句话 → 分镜、每镜 prompt、**一份连戏规则** | 本工具「做分镜」页 |\n"
-        "| ② | 拿 prompt 去生成视频 | **即梦／可灵／Seedance 等，不在本工具里** |\n"
+        "| ② | 拿 prompt 去生成视频 | **Veo／Sora／Runway／可灵／即梦，随便哪个——不在本工具里** |\n"
         "| ③ | 把生成结果传回来，用①那份规则检查 | 本工具「检查素材」页 |\n\n"
         "**①和③是同一份规则的两头**：做分镜时定下「这个空间长什么样」，"
         "检查时就拿它去对。已经有素材的话直接从③开始，那会用《第零号乘客》的成片规则当例子。"
@@ -785,7 +785,7 @@ with gr.Blocks(title="Passenger Zero · 连续性引擎", theme=gr.themes.Soft()
                     ),
                     label="审计模式",
                 )
-                model_name_in = gr.Textbox(label="生成该 Take 的模型", placeholder="即梦 / Seedance")
+                model_name_in = gr.Textbox(label="生成该 Take 的模型", placeholder="Veo / Kling / 即梦 / Seedance…")
                 filename_in = gr.Textbox(label="输出文件名", placeholder="S19_take03.mp4")
                 adoption_in = gr.Radio(["待定", "采纳", "不采纳"], value="待定", label="是否采纳")
                 reason_in = gr.Dropdown(
