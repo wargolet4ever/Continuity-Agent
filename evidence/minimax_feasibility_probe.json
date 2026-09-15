@@ -1,0 +1,108 @@
+{
+  "_readme": "MiniMax 视频生成可行性探测的脱敏记录。已删除密钥、请求头、账号与计费方案标识；保留时间、端点类型、HTTP 状态、错误类型与失败阶段。",
+  "conclusion": "完成了真实视频 API 可行性探测，密钥、网络、端点和请求结构验证通过，但生成任务在提交阶段因账户套餐权限被拒绝，因此未产生视频，也未接入正式生成链路。",
+  "attempts": [
+    {
+      "attempt": 1,
+      "outcome": "no_task_id",
+      "script_version": "v1",
+      "provider": "MiniMax",
+      "model": "MiniMax-H3-Max",
+      "params": {
+        "duration": 5,
+        "resolution": "768P",
+        "aspect_ratio": "16:9"
+      },
+      "steps": [
+        {
+          "step": "http",
+          "at": "2026-09-13T09:25:29+00:00",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 4672,
+          "endpoint_kind": "video_generation (v1)",
+          "error_summary": "HTTP 200 但响应中无 task_id（业务层拒绝，端点版本不符）",
+          "failure_class": "wrong_endpoint_version"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "outcome": "no_task_id",
+      "script_version": "v1",
+      "provider": "MiniMax",
+      "model": "MiniMax-H3-Max",
+      "params": {
+        "duration": 5,
+        "resolution": "768P",
+        "aspect_ratio": "16:9"
+      },
+      "steps": [
+        {
+          "step": "http",
+          "at": "2026-09-13T09:35:59+00:00",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 4125,
+          "endpoint_kind": "video_generation (v1)",
+          "error_summary": "HTTP 200 但响应中无 task_id（业务层拒绝，端点版本不符）",
+          "failure_class": "wrong_endpoint_version"
+        }
+      ]
+    },
+    {
+      "attempt": 3,
+      "outcome": "submit_failed",
+      "script_version": "v3",
+      "provider": "MiniMax",
+      "model": "MiniMax-H3-Max",
+      "params": {
+        "duration": 5,
+        "resolution": "768P",
+        "aspect_ratio": "16:9"
+      },
+      "steps": [
+        {
+          "step": "http",
+          "at": "2026-09-13T09:44:16+00:00",
+          "method": "POST",
+          "status": 400,
+          "duration_ms": 4125,
+          "endpoint_kind": "video_generation (v2)",
+          "error_type": "bad_request_error",
+          "error_summary": "invalid params, binding: expr_path=content, cause=missing required parameter (2013)",
+          "failure_class": "request_schema"
+        }
+      ]
+    },
+    {
+      "attempt": 4,
+      "outcome": "submit_failed",
+      "script_version": "v5",
+      "provider": "MiniMax",
+      "model": "MiniMax-H3-Max",
+      "params": {
+        "duration": 5,
+        "resolution": "768P"
+      },
+      "steps": [
+        {
+          "step": "http",
+          "at": "2026-09-13T09:50:10+00:00",
+          "method": "POST",
+          "status": 400,
+          "duration_ms": 4125,
+          "endpoint_kind": "video_generation (v2)",
+          "error_type": "bad_request_error",
+          "error_summary": "invalid params, 账户计费方案不支持该模型系列 (2013)",
+          "failure_class": "account_entitlement"
+        }
+      ]
+    }
+  ],
+  "failure_classes": {
+    "wrong_endpoint_version": "该模型要求 v2 端点，v1 返回 200 但不创建任务",
+    "request_schema": "v2 的请求体结构不同（需要 content 数组）",
+    "account_entitlement": "账户计费方案不覆盖该模型系列，提交阶段被拒"
+  }
+}

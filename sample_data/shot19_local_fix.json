@@ -1,0 +1,9 @@
+{
+  "shot_id": "19",
+  "mode": "本地规则（无需 API）",
+  "model": "即梦",
+  "observation": "操纵台／拉杆在镜头内发生形变",
+  "expected_decision": "REGENERATE",
+  "expected_rule": "LOC-B06",
+  "expected_fix": "锁定控制台轮廓、面板分区和固定机械组件，整镜重新生成"
+}

@@ -1,0 +1,1458 @@
+{
+  "_readme": "《第零号乘客 / Passenger Zero》连续性规则库 v1，配合 Loop Continuity & Take Curator Agent 使用。所有规则由叙事监督维护，代码侧只读取不改写。核心原则见 meta.principle。",
+  "meta": {
+    "version": "1.3",
+    "script_version": "v2 剧本锁定版",
+    "updated": "2026-09-10",
+    "principle": "每一条规则都必须能从一张截图上证伪。无法从画面验证的剧情事实不写入本文件，写入 story_facts_not_checkable 供参考但不参与打分。",
+    "rule_id_prefixes": {
+      "CHAR": "角色一致性",
+      "LOC": "场景与道具",
+      "CAM": "机位、景别、轴线",
+      "LOOP": "循环轮次区分",
+      "SHOT": "单镜头专属",
+      "TEXT": "画面文字"
+    },
+    "severity_to_decision": {
+      "local_fix": "可后期覆盖或小范围重绘，不重新生成整镜",
+      "regenerate": "结构性错误，必须重新生成",
+      "human_review": "涉及表演或剧作判断，Agent 不下结论，交人工"
+    },
+    "rule_optional_fields": {
+      "only_shots": "该规则仅对列出的镜头生效；缺省表示对该规则所属范围内的全部镜头生效",
+      "scope_locations": "该规则仅在列出的 location 生效；缺省表示不限场景"
+    }
+  },
+  "film": {
+    "title": "Passenger Zero / 第零号乘客",
+    "total_runtime_sec": 202,
+    "locked_shots": "01-12（已生成，不得重排、不得改变人物位置与已建立线索）",
+    "open_shots": "13-26（未生成）"
+  },
+  "characters": {
+    "daniel": {
+      "aliases": [
+        "Passenger 00",
+        "Investigation Instance 00",
+        "Zero"
+      ],
+      "rules": [
+        {
+          "id": "CHAR-D01",
+          "text": "外貌、服装、仿生身体特征在全片所有镜头中完全一致",
+          "check": "与 Shot 02 的激活舱基准帧比对面部、发型、服装剪裁与颜色、颈部/手部仿生接缝",
+          "severity": "regenerate"
+        },
+        {
+          "id": "CHAR-D02",
+          "text": "仿生身体特征必须可见但不夸张：颈侧与手背有接缝或材质分界，不做成明显机器人",
+          "check": "颈部与手部是否存在接缝；是否出现外露机械结构、金属外骨骼、发光眼",
+          "severity": "regenerate"
+        }
+      ]
+    },
+    "047": {
+      "rules": [
+        {
+          "id": "CHAR-0401",
+          "text": "外貌、服装在 Shot 15-25 全部镜头中完全一致",
+          "check": "与 Shot 15 的基准帧比对",
+          "severity": "regenerate"
+        },
+        {
+          "id": "CHAR-0402",
+          "text": "身体状态为长时间用力后的疲惫：指节发白、前臂紧绷、有轻微颤抖、额发被汗贴住",
+          "check": "手部与前臂是否呈现持续用力的状态；是否呈现放松站姿",
+          "severity": "local_fix"
+        },
+        {
+          "id": "CHAR-0403",
+          "text": "047 的表情基线是疲惫而坚持，不得出现放松、愉悦或事不关己",
+          "check": "面部是否呈现长时间承压的状态",
+          "severity": "human_review",
+          "only_shots": [
+            15,
+            19,
+            20,
+            21,
+            23,
+            24,
+            25
+          ]
+        },
+        {
+          "id": "CHAR-0404",
+          "text": "047 不得出现任何机械化、非人化、AI 化的视觉标记（发光纹路、数据流、半透明）。她看起来必须是一个人。",
+          "check": "是否出现发光元素或非实体渲染",
+          "severity": "regenerate"
+        },
+        {
+          "id": "CHAR-0405",
+          "text": "Shot 16 中拉杆锁死之后，047 的表情必须是惊恐，不得是得意、冷笑、平静或释然",
+          "check": "Shot 16 的 C 机位帧，眉眼是否呈现失控的惊恐",
+          "severity": "human_review",
+          "only_shots": [
+            16
+          ],
+          "note": "全片人物动机的关键：Attempt 04 的失败是 Daniel 的错，不是 047 的选择。她若显得得意，整部片子的论点就反了。"
+        }
+      ]
+    },
+    "engineer": {
+      "rules": [
+        {
+          "id": "CHAR-E01",
+          "text": "外貌与工装与 Shot 05/06/09/10/11/12 已生成素材一致",
+          "check": "与 Shot 09 基准帧比对",
+          "severity": "regenerate"
+        }
+      ]
+    },
+    "main_system": {
+      "rules": [
+        {
+          "id": "CHAR-S01",
+          "text": "主系统只有声音，任何镜头中都不得出现实体形象、全息人形、面孔、拟人化图标或中心化的发光球体",
+          "check": "画面中是否出现任何可被读作『系统的身体』的视觉元素",
+          "severity": "regenerate"
+        }
+      ]
+    }
+  },
+  "locations": {
+    "bay_07": {
+      "description": "小型控制舱。一条横向长控制台，后墙有大型信息屏幕与过载读数。光源来自控制台自身，低位、偏冷。",
+      "layout": {
+        "console": "横向贯穿画面，长度足以让两端明显分离",
+        "lever_大型机械拉杆": "控制台【左端】",
+        "manual_control_key_实体控制键": "控制台【左端】，紧邻拉杆，047 单手可及",
+        "key_socket_实体钥匙插槽": "控制台【右端】，047 在压住拉杆的情况下【够不到】",
+        "large_info_screen_大型信息屏幕": "后墙，控制台正后方",
+        "overload_readout_过载读数": "后墙，大型信息屏幕一侧",
+        "hatch_舱门": "控制台对面，摄影机主方向"
+      },
+      "rules": [
+        {
+          "id": "LOC-B01",
+          "text": "拉杆在控制台左端，钥匙插槽在控制台右端，两者之间隔着整条控制台，视觉上必须明显够不到",
+          "check": "在 A 机位全景中，拉杆与钥匙插槽是否分处画面两侧且相距超过一个人臂展",
+          "severity": "regenerate",
+          "note": "Shot 21『必须两个人』的全部前提。这一条失守，第三幕的合作动机塌掉。"
+        },
+        {
+          "id": "LOC-B02",
+          "text": "实体控制键紧邻拉杆（同在左端），047 松开一只手即可按到",
+          "check": "控制键是否与拉杆同区域",
+          "severity": "regenerate",
+          "note": "必须与 LOC-B01 区分：控制键够得到，钥匙够不到。两者不可混淆。"
+        },
+        {
+          "id": "LOC-B03",
+          "text": "禁止新增任何未经建立的显示设备，尤其是小型显示屏、平板、手持终端、悬浮UI面板",
+          "check": "画面中除后墙大型信息屏幕与过载读数外，是否出现其他屏幕",
+          "severity": "local_fix",
+          "note": "核心 Demo 案例（Shot 19）。可后期擦除，不必重生成整镜。"
+        },
+        {
+          "id": "LOC-B04",
+          "text": "光源来自控制台自身，低位、偏冷。不得出现顶光、自然光、暖光源或窗外星空照明",
+          "check": "主光方向与色温",
+          "severity": "local_fix"
+        },
+        {
+          "id": "LOC-B05",
+          "text": "舱内不得出现第四个人物或人形轮廓",
+          "check": "画面中的人数",
+          "severity": "regenerate"
+        }
+      ]
+    },
+    "passenger_ring": {
+      "description": "巨大明亮的环形空间。一侧是成排生物乘客苏醒舱正在依次亮起，另一侧是封闭黑暗的数据舱壁。",
+      "rules": [
+        {
+          "id": "LOC-P01",
+          "text": "苏醒舱一侧亮、数据舱壁一侧暗，两者必须在同一画面内形成对比",
+          "check": "是否同框且明暗分明",
+          "severity": "regenerate"
+        },
+        {
+          "id": "LOC-P02",
+          "text": "不得出现走动的人群、清醒站立的乘客或大规模人流",
+          "check": "画面中是否有除 Daniel 外的活动人物",
+          "severity": "regenerate"
+        }
+      ]
+    },
+    "arrival_power_junction": {
+      "description": "狭窄工业管道空间。Shot 06/08/10/11/12/22 共用。",
+      "rules": [
+        {
+          "id": "LOC-J01",
+          "text": "与已生成的 Shot 06/10/11/12 素材保持同一空间",
+          "check": "与 Shot 10 基准帧比对管道走向、控制台位置、色温",
+          "severity": "regenerate"
+        }
+      ]
+    },
+    "bionic_activation_bay": {
+      "description": "激活舱。Shot 01/02/03/07/17/25 共用。",
+      "rules": [
+        {
+          "id": "LOC-A01",
+          "text": "与已生成的 Shot 01/02/07 素材保持同一空间与同一机位",
+          "check": "与 Shot 07 基准帧比对",
+          "severity": "regenerate"
+        }
+      ]
+    },
+    "bay_07_exterior": {
+      "description": "Bay 07 舱门外的走廊尽端。只有舱门与被撬开的门禁面板，不含任何舱内设备。",
+      "rules": [
+        {
+          "id": "LOC-X01",
+          "text": "门禁面板必须呈现被外力撬开并交叉接线的状态，线束外露",
+          "check": "面板是否开启、是否有外露接线",
+          "severity": "regenerate"
+        },
+        {
+          "id": "LOC-X02",
+          "text": "画面中不得出现 Bay 07 舱内设备（控制台、拉杆、钥匙插槽、大型信息屏幕）",
+          "check": "是否能看见舱内陈设",
+          "severity": "regenerate",
+          "note": "舱门此时是关着的，看见舱内就意味着空间关系错了。"
+        },
+        {
+          "id": "LOC-X03",
+          "text": "不得新增显示设备",
+          "check": "画面中是否出现屏幕",
+          "severity": "local_fix"
+        }
+      ]
+    }
+  },
+  "camera": {
+    "setups_bay_07": {
+      "A": {
+        "name": "大全景",
+        "desc": "横向包含整条控制台，左端拉杆+047、右端空着的钥匙插槽同框，后墙读数可见",
+        "used_in": [
+          15,
+          21
+        ],
+        "critical": true,
+        "note": "全片唯一同时装下拉杆和钥匙的画面。观众只有见过它，才会在 Shot 21 理解『一个人够不到两处』。"
+      },
+      "B": {
+        "name": "Daniel过肩中景",
+        "desc": "他的肩在右前景，047 在左",
+        "used_in": [
+          16,
+          19,
+          20
+        ]
+      },
+      "C": {
+        "name": "047正面近景",
+        "desc": "脸和压着拉杆的双手必须在同一画面内",
+        "used_in": [
+          15,
+          16,
+          19,
+          20,
+          21,
+          24
+        ],
+        "note": "手不在框内则观众会忘记她在压东西。"
+      },
+      "D": {
+        "name": "拉杆机械特写",
+        "desc": "只有拉杆和手",
+        "used_in": [
+          16,
+          21
+        ]
+      },
+      "E": {
+        "name": "钥匙插槽特写",
+        "desc": "只有插槽和 Daniel 的手",
+        "used_in": [
+          21
+        ]
+      },
+      "F": {
+        "name": "后墙读数",
+        "desc": "过载读数",
+        "used_in": [
+          16,
+          20,
+          21
+        ]
+      },
+      "G": {
+        "name": "双人正面中景",
+        "desc": "两人并肩，面向系统声音的方向",
+        "used_in": [
+          23,
+          24
+        ]
+      },
+      "H": {
+        "name": "Daniel正面近景",
+        "desc": "干净，非过肩",
+        "used_in": [
+          15,
+          19,
+          24
+        ]
+      }
+    },
+    "rules": [
+      {
+        "id": "CAM-01",
+        "text": "轴线：047 永远在画面左，钥匙插槽永远在画面右，Daniel 任何时候都不得越过 047 成为更靠左的人",
+        "check": "两人在画面中的左右关系；钥匙插槽所在的一侧",
+        "severity": "regenerate",
+        "note": "越轴是循环片最容易出、也最致命的错。"
+      },
+      {
+        "id": "CAM-02",
+        "text": "在需要跨镜头共享几何的场景中，摄影机不做推轨、环绕、升降。全部固定机位，最多极轻微手持",
+        "check": "画面是否存在明显的机位位移或旋转",
+        "severity": "regenerate",
+        "scope_locations": [
+          "bay_07",
+          "arrival_power_junction",
+          "bionic_activation_bay"
+        ],
+        "note": "这条规则的理由是『镜头一动，模型就会重新编造房间』，因此只在多个镜头必须共用同一套空间关系的场景成立。Bay 07 有七个镜头共用一个房间，是它保护的主要对象。"
+      },
+      {
+        "id": "CAM-03",
+        "text": "实际景别必须匹配本镜指定的机位代号",
+        "check": "输入的 camera_setup 字段与画面景别是否一致",
+        "severity": "regenerate"
+      },
+      {
+        "id": "CAM-04",
+        "text": "不得使用鱼眼、极端广角、荷兰角或强透视变形",
+        "check": "画面边缘变形与地平线倾斜",
+        "severity": "regenerate"
+      },
+      {
+        "id": "CAM-05",
+        "text": "Passenger Ring 的穿越镜头（Shot 13、18）允许单一方向的前推或跟随运动，但禁止环绕、升降与方向反转",
+        "check": "运动是否为单一方向；是否出现绕人物旋转或垂直升降",
+        "severity": "regenerate",
+        "scope_locations": [
+          "passenger_ring"
+        ],
+        "note": "环绕是最容易让模型重编空间的运动。Shot 18 复用 Shot 13 的场景，因此两镜的运动方向与空间关系必须一致。"
+      }
+    ]
+  },
+  "attempts": {
+    "04": {
+      "shots": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "rules": [
+        {
+          "id": "LOOP-04A",
+          "text": "Daniel 急躁、快步、身体前倾，不断缩短与 047 的距离",
+          "check": "他的姿态与两人距离的变化方向",
+          "severity": "human_review"
+        },
+        {
+          "id": "LOOP-04B",
+          "text": "光色：控制台冷白起，中段转红色警报",
+          "check": "画面整体色温与红光出现时机",
+          "severity": "local_fix"
+        },
+        {
+          "id": "LOOP-04C",
+          "text": "剪辑节奏快（Shot 16 为 5 刀 / 7 秒）",
+          "check": "不适用于单帧，供剪辑核对",
+          "severity": "human_review"
+        }
+      ]
+    },
+    "05": {
+      "shots": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26
+      ],
+      "rules": [
+        {
+          "id": "LOOP-05A",
+          "text": "Daniel 克制：先停在门口不动，后走向与 047 【相反的一端】",
+          "check": "他是否停住；他的移动方向是远离还是靠近 047",
+          "severity": "human_review",
+          "note": "同一房间两条相反路线，是观众分辨轮次的最强信号。"
+        },
+        {
+          "id": "LOOP-05B",
+          "text": "Attempt 05 全程不得出现红色警报光。危险升级表现为冷白光闪烁与整体亮度下降；Shot 21 之后闪烁停止、照明恢复稳定",
+          "check": "画面中是否存在饱和的警报红（高 R、同时低 G 低 B）。暖肤色、琥珀色仪表灯、铜色道具都不算红光",
+          "severity": "local_fix",
+          "note": "红光是 Attempt 04 的专属标记，是观众分辨轮次的物理依据。检测时必须排除暖色调误判——肤色不是警报光。"
+        },
+        {
+          "id": "LOOP-05C",
+          "text": "剪辑节奏慢（Shot 19 为 4 刀 / 9 秒，Shot 20 仅 3 刀）",
+          "check": "不适用于单帧",
+          "severity": "human_review"
+        }
+      ]
+    }
+  },
+  "global_rules": [
+    {
+      "id": "TEXT-01",
+      "text": "所有精确 UI 文字一律后期添加。生成画面中出现的任何可读文字（包括错字、乱码、伪英文）判为 local_fix，后期覆盖即可",
+      "check": "画面中是否存在可读文字",
+      "severity": "local_fix",
+      "note": "这一条能省掉大量无谓重生成。不得因文字错误触发 regenerate。"
+    },
+    {
+      "id": "TEXT-02",
+      "text": "屏幕内容不得一次性给出完整答案。信息一次只给一行",
+      "check": "屏幕上出现的信息行数",
+      "severity": "local_fix"
+    },
+    {
+      "id": "LOC-G01",
+      "text": "全片不得新增主要场景。允许出现的空间仅限：Bionic Activation Bay、Technical Ring、Lower Technical Sector、连接廊、Arrival Power Junction、Passenger Ring、Bay 07",
+      "check": "画面所处空间是否在允许清单内",
+      "severity": "regenerate"
+    },
+    {
+      "id": "LOC-G02",
+      "text": "全片不得新增有名有姓的配角。人物仅限 Daniel、047、工程师",
+      "check": "画面中出现的人物身份",
+      "severity": "regenerate"
+    }
+  ],
+  "shots": {
+    "13": {
+      "attempt": "04",
+      "duration_sec": 6,
+      "location": "passenger_ring",
+      "camera": [
+        "TRAVERSAL-单向前推"
+      ],
+      "identity_critical": false,
+      "must_show": [
+        "苏醒舱依次亮起",
+        "封闭黑暗的数据舱壁",
+        "Daniel 全速穿过"
+      ],
+      "must_not_show": [
+        "电脑屏幕",
+        "其他活动人物"
+      ]
+    },
+    "14": {
+      "attempt": "04",
+      "duration_sec": 7,
+      "location": "bay_07_exterior",
+      "camera": [
+        "中近景"
+      ],
+      "identity_critical": false,
+      "must_show": [
+        "被撬开并交叉接线的门禁面板",
+        "Daniel 用力扳开舱门",
+        "舱门为手动锁死，非系统锁"
+      ],
+      "must_not_show": [
+        "显示屏"
+      ],
+      "dialogue": "Main System（画外）：\"Bay Seven is outside system control.\""
+    },
+    "15": {
+      "attempt": "04",
+      "duration_sec": 8,
+      "location": "bay_07",
+      "camera": [
+        "A",
+        "C",
+        "H"
+      ],
+      "identity_critical": true,
+      "must_show": [
+        "047 双手把拉杆压在最低位",
+        "指节发白、手臂发抖",
+        "她回头看他但不松手",
+        "A 机位中拉杆与钥匙插槽分处两端"
+      ],
+      "must_not_show": [
+        "她在打字",
+        "她站直或放松",
+        "小型显示屏"
+      ],
+      "rules": [
+        {
+          "id": "SHOT-15A",
+          "text": "A 机位必须在本镜出现一次，且拉杆与钥匙插槽同框",
+          "check": "是否存在同时包含两者的画面",
+          "severity": "regenerate"
+        }
+      ]
+    },
+    "16": {
+      "attempt": "04",
+      "duration_sec": 7,
+      "location": "bay_07",
+      "camera": [
+        "B",
+        "D",
+        "C",
+        "F"
+      ],
+      "identity_critical": true,
+      "must_show": [
+        "Daniel 拽开她的手臂",
+        "拉杆弹起并锁死在最高位",
+        "047 的惊恐表情",
+        "后墙读数跳进红区"
+      ],
+      "must_not_show": [
+        "047 得意、冷笑或平静",
+        "047 主动松手",
+        "拉杆保持在低位"
+      ],
+      "rules": [
+        {
+          "id": "SHOT-16A",
+          "text": "拉杆必须从最低位弹到最高位并停住，这是本镜的信息核心",
+          "check": "D 机位中拉杆的起止位置",
+          "severity": "regenerate"
+        },
+        {
+          "id": "SHOT-16B",
+          "text": "读数是【跳变】进红区，不是缓慢攀升",
+          "check": "F 机位读数状态",
+          "severity": "local_fix"
+        }
+      ],
+      "reusable": "爆炸画面复用 Shot 06 / Shot 11，不得重新生成"
+    },
+    "17": {
+      "attempt": "05",
+      "duration_sec": 4,
+      "location": "bionic_activation_bay",
+      "camera": [
+        "复用 Shot 07 构图"
+      ],
+      "identity_critical": false,
+      "must_show": [
+        "睁眼后停顿一拍再起身"
+      ],
+      "must_not_show": [
+        "猛然弹起"
+      ],
+      "reusable": "Shot 07 全部素材"
+    },
+    "18": {
+      "attempt": "05",
+      "duration_sec": 6,
+      "location": "passenger_ring",
+      "camera": [
+        "TRAVERSAL-单向前推",
+        "人物近景-固定"
+      ],
+      "identity_critical": false,
+      "must_show": [
+        "Daniel 第一次主动停下",
+        "仿生手按在数据舱壁上",
+        "舱壁内部极微弱的规律闪烁",
+        "他低头看自己的手，开始怀疑自身与舱壁内的存在有关联"
+      ],
+      "must_not_show": [
+        "台词",
+        "电脑屏幕",
+        "任何表明他已确知自己是数字乘客或已知自己编号的表现"
+      ],
+      "reusable": "Shot 13 的 Passenger Ring 素材",
+      "establishes_facts": [
+        "F22"
+      ]
+    },
+    "19": {
+      "attempt": "05",
+      "duration_sec": 9,
+      "location": "bay_07",
+      "camera": [
+        "门口反打",
+        "C",
+        "H",
+        "B"
+      ],
+      "identity_critical": true,
+      "must_show": [
+        "Daniel 停在门口不动",
+        "047 松开【一只手】去按控制台左端的实体控制键",
+        "047 的【另一只手始终压住拉杆】",
+        "处置名单出现在后墙【原有的大型信息屏幕】上，且只显示一行"
+      ],
+      "must_not_show": [
+        "任何新增的小型显示屏、平板、手持终端、悬浮UI",
+        "047 双手离开拉杆",
+        "Daniel 靠近或触碰她"
+      ],
+      "rules": [
+        {
+          "id": "SHOT-19A",
+          "text": "047 任何时刻都不得双手离开拉杆",
+          "check": "至少一只手是否仍压在拉杆上",
+          "severity": "regenerate"
+        },
+        {
+          "id": "SHOT-19B",
+          "text": "信息只能出现在后墙大型信息屏幕，不得新增显示设备",
+          "check": "信息载体是哪一块屏",
+          "severity": "local_fix"
+        }
+      ],
+      "demo_case": "核心 Demo A：错误生成中出现未经设定的小型显示屏 → LOCAL FIX / Prop Continuity",
+      "dialogue": [
+        "Daniel: \"What am I?\"",
+        "047: \"Instance zero. The first one.\"",
+        "（他读那一行，一拍）",
+        "047: \"If it lands, they erase us.\""
+      ],
+      "dialogue_word_count": 15,
+      "establishes_facts": [
+        "F15",
+        "F16",
+        "F17",
+        "F20"
+      ],
+      "note": "047 的最后一句一次交付四件事：他属于被上传的意识、舱壁中的意识也是人、到港处置意味着清除、她压杆是为了阻止到港。关键词是 'us'——这是全片第一次把 Daniel 和她归为同一类。不改动作、机位、控制键、大屏与拉杆规则。"
+    },
+    "20": {
+      "attempt": "05",
+      "duration_sec": 7,
+      "location": "bay_07",
+      "camera": [
+        "B",
+        "C",
+        "F"
+      ],
+      "identity_critical": true,
+      "must_show": [
+        "047 仍压着拉杆",
+        "读数升高",
+        "灯光闪烁"
+      ],
+      "must_not_show": [
+        "红色警报（属于 Attempt 04）",
+        "047 放松站姿"
+      ]
+    },
+    "21": {
+      "attempt": "05",
+      "duration_sec": 7,
+      "location": "bay_07",
+      "camera": [
+        "A",
+        "E",
+        "D",
+        "F",
+        "C"
+      ],
+      "identity_critical": true,
+      "must_show": [
+        "A 机位重现，两人分处控制台两端",
+        "047 在左端压住拉杆，Daniel 在右端拔出实体钥匙",
+        "两人之间的距离明显超过一个人臂展",
+        "钥匙拔出后拉杆缓缓升起",
+        "读数回落、冷白闪烁停止、照明恢复稳定"
+      ],
+      "must_not_show": [
+        "钥匙插槽出现在左端或靠近拉杆",
+        "047 出现在画面右侧",
+        "一个人同时够到两处",
+        "拉杆弹跳或锁死",
+        "红色警报光"
+      ],
+      "rules": [
+        {
+          "id": "SHOT-21A",
+          "text": "钥匙插槽必须在控制台右端，与拉杆分处两侧",
+          "check": "与 Shot 15 的 A 机位比对钥匙插槽所在的一侧",
+          "severity": "regenerate",
+          "note": "这一条失守则第三幕的合作动机整体塌掉，而单看本帧画面完全合理——只有跨镜头比对才能发现。"
+        },
+        {
+          "id": "SHOT-21B",
+          "text": "拉杆在本镜是【缓缓升起】，与 Shot 16 的弹起锁死形成反差",
+          "check": "D 机位中拉杆的运动方式",
+          "severity": "regenerate"
+        }
+      ],
+      "demo_case": "核心 Demo B：错误生成把钥匙插槽放到控制台左端 → REGENERATE / Scene + Prop + Framing"
+    },
+    "22": {
+      "attempt": "05",
+      "duration_sec": 5,
+      "location": "arrival_power_junction",
+      "camera": [
+        "中景"
+      ],
+      "identity_critical": false,
+      "must_show": [
+        "工程师独自站立",
+        "读数落回正常",
+        "空间完好无损"
+      ],
+      "must_not_show": [
+        "Daniel",
+        "047",
+        "爆炸痕迹"
+      ],
+      "reusable": "Shot 06/08/10/11/12 的 Junction 场景"
+    },
+    "23": {
+      "attempt": "05",
+      "duration_sec": 8,
+      "location": "bay_07",
+      "camera": [
+        "G",
+        "C"
+      ],
+      "identity_critical": true,
+      "must_show": [
+        "Daniel 与 047 并肩",
+        "两人面向系统声音的方向"
+      ],
+      "must_not_show": [
+        "系统的任何实体形象、全息人形、面孔或中心化发光体",
+        "电脑屏幕"
+      ]
+    },
+    "24": {
+      "attempt": "05",
+      "duration_sec": 9,
+      "location": "bay_07",
+      "camera": [
+        "G",
+        "H",
+        "C"
+      ],
+      "identity_critical": true,
+      "must_show": [
+        "Daniel 与 047 同框（G 机位）",
+        "Daniel 有一个明确的转向 047 的动作",
+        "Daniel 说最后一句时的正面近景（H 机位）"
+      ],
+      "must_not_show": [
+        "电脑屏幕",
+        "系统的实体形象"
+      ],
+      "note": "『他最终不指认她』是剧情事实，无法从截图验证，不参与打分。可验证的是同框与那个转头动作。",
+      "causality_note": "编号 00 只说明 Daniel 是第一个被上传的意识，编号本身不产生任何权限。他的结论能够归档并触发复核，唯一来源是 Shot 04 已建立的设计者权限且该权限仍然有效（F05）。"
+    },
+    "25": {
+      "attempt": "05",
+      "duration_sec": 7,
+      "location": "bionic_activation_bay",
+      "camera": [
+        "复用 Shot 01/02 机位"
+      ],
+      "identity_critical": true,
+      "must_show": [
+        "Daniel 自己走回激活舱躺上激活台",
+        "系统画外音先响起",
+        "他停顿一拍",
+        "他自己伸手按下停机控制",
+        "指示灯逐一熄灭",
+        "047 站在台边看着，没有阻止"
+      ],
+      "must_not_show": [
+        "047 阻止他",
+        "系统的实体形象",
+        "任何暴力或强制迹象"
+      ],
+      "note": "必须读作『他自己关掉自己』，不是被处决。",
+      "reusable": "Shot 01/02 的激活舱素材",
+      "dialogue": "Main System（画外，在他按下之前）：\"Shutdown will purge Instance Zero.\"",
+      "establishes_facts": [
+        "F26"
+      ]
+    },
+    "26": {
+      "attempt": null,
+      "duration_sec": 6,
+      "location": null,
+      "identity_critical": false,
+      "generation_required": false,
+      "note": "纯后期 UI，不进入生成流程。直接在 Shot 05 素材上制作。",
+      "causal_order": [
+        "Shot 25 永久清除 Instance Zero（F26）",
+        "DIGITAL PASSENGERS 46,702 → 46,701",
+        "停顿一拍",
+        "HOLD FOR ARRIVAL DISPOSITION → UNDER REVIEW — WITNESS RECORD 00"
+      ],
+      "caused_by": [
+        "F26"
+      ]
+    }
+  },
+  "identity_critical_shots": [
+    15,
+    16,
+    19,
+    20,
+    21,
+    23,
+    24,
+    25
+  ],
+  "non_identity_shots": [
+    13,
+    14,
+    17,
+    18,
+    22,
+    26
+  ],
+  "post_production_patches_on_locked_shots": [
+    {
+      "id": "P1",
+      "shot": 5,
+      "applied": false,
+      "establishes_facts": [
+        "F16",
+        "F20"
+      ],
+      "action": "导航屏后期增加两行：BIO PASSENGERS 12,000 — WAKE-UP PENDING / DIGITAL PASSENGERS 46,702 — HOLD FOR ARRIVAL DISPOSITION",
+      "duration_sec": 1.5
+    },
+    {
+      "id": "P2",
+      "shot": 4,
+      "applied": false,
+      "establishes_facts": [
+        "F21"
+      ],
+      "action": "系统 UI 角标出现一次 INVESTIGATION INSTANCE 00，压在『Your clearance is still active』这句上"
+    },
+    {
+      "id": "P3",
+      "shot": "11→12",
+      "applied": false,
+      "establishes_facts": [],
+      "action": "插入约 1 秒 Shot 07 睁眼画面复用，补上缺失的重启锚点"
+    },
+    {
+      "id": "P4",
+      "shot": 8,
+      "applied": false,
+      "establishes_facts": [],
+      "action": "剪短至约 4 秒"
+    }
+  ],
+  "reusable_assets": {
+    "explosion": {
+      "source_shots": [
+        6,
+        11
+      ],
+      "used_by": [
+        16
+      ],
+      "note": "不得重新生成"
+    },
+    "activation_bay": {
+      "source_shots": [
+        1,
+        2,
+        7
+      ],
+      "used_by": [
+        17,
+        25
+      ]
+    },
+    "junction": {
+      "source_shots": [
+        6,
+        8,
+        10,
+        11,
+        12
+      ],
+      "used_by": [
+        22
+      ]
+    },
+    "passenger_ring": {
+      "source_shots": [
+        13
+      ],
+      "used_by": [
+        18
+      ]
+    },
+    "nav_screen": {
+      "source_shots": [
+        5
+      ],
+      "used_by": [
+        26
+      ]
+    }
+  },
+  "story_facts_not_checkable": [
+    "Shot 24 中 Daniel 最终不指认 047，而是指认处置协议",
+    "Attempt 04 的失败是 Daniel 的错，不是 047 的选择",
+    "Daniel 是第一个被上传的意识，因此设计者权限未被撤销",
+    "047 的诉求是阻止数字乘客的到港处置协议",
+    "证词效力来源是 Shot 04 已建立的设计者权限，不是『第一个被上传』本身"
+  ],
+  "decision_policy": {
+    "default_by_severity": true,
+    "always_local_fix": [
+      "TEXT-01",
+      "TEXT-02",
+      "LOC-B03",
+      "LOC-B04",
+      "LOOP-04B",
+      "LOOP-05B",
+      "CHAR-0402",
+      "SHOT-16B",
+      "SHOT-19B"
+    ],
+    "always_regenerate": [
+      "CAM-01",
+      "CAM-02",
+      "LOC-B01",
+      "LOC-B02",
+      "SHOT-21A",
+      "SHOT-21B",
+      "SHOT-19A",
+      "CHAR-D01",
+      "CHAR-0401",
+      "CHAR-S01"
+    ],
+    "always_human_review": [
+      "CHAR-0403",
+      "CHAR-0405",
+      "LOOP-04A",
+      "LOOP-05A"
+    ],
+    "threshold_note": "identity_critical 为 false 的镜头，CHAR-* 类规则的判定阈值应放宽，避免误杀可用素材。",
+    "confidence_rule": "视觉判断置信度低于阈值时输出 HUMAN_REVIEW，不得强行归入其他三档。"
+  },
+  "knowledge_ledger": {
+    "_component": "Agent 1 — Loop Continuity Compiler 的输入；Agent 5 — Loop-Divergence Auditor 的判据",
+    "_authoring_note": "由叙事监督手工编写，不由模型从剧本抽取。established_in 指该事实第一次在画面上可被建立的镜头；daniel_knows_from / audience_knows_from 指各自开始掌握它的镜头。两者不相等是正常的，戏剧张力往往正来自这个差。",
+    "facts": {
+      "F01": {
+        "text": "Daniel 的原始肉身已死亡",
+        "established_in": 2,
+        "daniel_knows_from": 2,
+        "audience_knows_from": 2
+      },
+      "F02": {
+        "text": "他现在使用的是临时仿生身体",
+        "established_in": 2,
+        "daniel_knows_from": 2,
+        "audience_knows_from": 2
+      },
+      "F03": {
+        "text": "八分钟后会发生灾难",
+        "established_in": 3,
+        "daniel_knows_from": 3,
+        "audience_knows_from": 3
+      },
+      "F04": {
+        "text": "他的任务是找出责任实体",
+        "established_in": 3,
+        "daniel_knows_from": 3,
+        "audience_knows_from": 3
+      },
+      "F05": {
+        "text": "他设计了 ARK-01 安全系统，设计者权限仍然有效",
+        "established_in": 4,
+        "daniel_knows_from": 4,
+        "audience_knows_from": 4,
+        "must_pay_off_by": 24,
+        "payoff_note": "Shot 24 证词效力的唯一来源。与编号 00 无关。",
+        "note": "设计者权限全片有效，从未被撤销。Shot 14 的『outside system control』说的是 Bay 07 脱离系统控制，不是 Daniel 权限失效。"
+      },
+      "F06": {
+        "text": "死亡后系统会重新载入他，记忆保留",
+        "established_in": 4,
+        "daniel_knows_from": 4,
+        "audience_knows_from": 4
+      },
+      "F07": {
+        "text": "完成任务可获得永久身体",
+        "established_in": 4,
+        "daniel_knows_from": 4,
+        "audience_knows_from": 4,
+        "must_pay_off_by": 24,
+        "payoff_note": "Shot 24 他放弃的正是这个"
+      },
+      "F08": {
+        "text": "爆炸的物理发生点是 Arrival Power Junction",
+        "established_in": 6,
+        "daniel_knows_from": 6,
+        "audience_knows_from": 6
+      },
+      "F09": {
+        "text": "工程师不是事故起因",
+        "established_in": 8,
+        "daniel_knows_from": 8,
+        "audience_knows_from": 6,
+        "note": "观众在 Shot 06 通过抢修动作先于 Daniel 得知。这是有意的领先，不是漏洞。"
+      },
+      "F10": {
+        "text": "Junction 只是执行端，异常由远程命令驱动",
+        "established_in": 10,
+        "daniel_knows_from": 10,
+        "audience_knows_from": 10
+      },
+      "F11": {
+        "text": "远程来源是 Bay 07 / Arrival Control",
+        "established_in": 11,
+        "daniel_knows_from": 11,
+        "audience_knows_from": 11
+      },
+      "F12": {
+        "text": "当前操作者编号是 047",
+        "established_in": 12,
+        "daniel_knows_from": 12,
+        "audience_knows_from": 12
+      },
+      "F18": {
+        "text": "钥匙插槽在控制台右端，与拉杆相距一整个台面",
+        "established_in": 15,
+        "daniel_knows_from": 15,
+        "audience_knows_from": 15,
+        "must_pay_off_by": 21,
+        "payoff_note": "Shot 21『一个人够不到两处』的前提，必须先让观众看见"
+      },
+      "F13": {
+        "text": "松手会让拉杆弹起并锁死，等于提前引爆",
+        "established_in": 16,
+        "daniel_knows_from": 16,
+        "audience_knows_from": 16,
+        "must_pay_off_by": 21
+      },
+      "F14": {
+        "text": "制服 047 不能阻止爆炸",
+        "established_in": 16,
+        "daniel_knows_from": 16,
+        "audience_knows_from": 16
+      },
+      "F20": {
+        "text": "船上同时存在生物乘客与数字乘客",
+        "established_in": 5,
+        "daniel_knows_from": 19,
+        "audience_knows_from": 5,
+        "audience_depends_on_patch": "P1",
+        "note": "Daniel 直到 Shot 19 由 047 告知才确知。Shot 05 的导航屏信息只提供给观众作为前置伏笔，他没有查看或理解那两行。"
+      },
+      "F21": {
+        "text": "Daniel 的系统编号是 INVESTIGATION INSTANCE 00",
+        "established_in": 4,
+        "daniel_knows_from": 19,
+        "audience_knows_from": 4,
+        "audience_depends_on_patch": "P2",
+        "must_pay_off_by": 26,
+        "note": "编号 00 是身份，不是权限。观众自 Shot 04 的 P2 角标起知道；Daniel 直到 Shot 19 由 047 说出 'Instance zero' 才知道自己的编号。回收点在 Shot 19 与 Shot 26（WITNESS RECORD 00），不在 Shot 24。"
+      },
+      "F16": {
+        "text": "数字乘客到港后将被处置",
+        "established_in": 5,
+        "daniel_knows_from": 19,
+        "audience_knows_from": 5,
+        "audience_depends_on_patch": "P1",
+        "must_pay_off_by": 26,
+        "note": "Shot 19 由 047 用 'If it lands, they erase us.' 向 Daniel 交付。观众远早于他知道（Shot 05／P1），结局才有分量。"
+      },
+      "F15": {
+        "text": "Daniel 本人就是数字乘客之一，编号 00",
+        "established_in": 19,
+        "daniel_knows_from": 19,
+        "audience_knows_from": 19,
+        "requires_facts": [
+          "F20",
+          "F21",
+          "F23"
+        ],
+        "note": "观众能接住这个揭示，前提是 F20 和 F21 已经在场。两者都依赖后期补丁。"
+      },
+      "F17": {
+        "text": "047 干预的目的是阻止到港，从而阻止处置协议执行",
+        "established_in": 19,
+        "daniel_knows_from": 19,
+        "audience_knows_from": 19,
+        "requires_facts": [
+          "F16"
+        ]
+      },
+      "F19": {
+        "text": "主系统不会暂停处置协议，因为协议不是故障",
+        "established_in": 23,
+        "daniel_knows_from": 23,
+        "audience_knows_from": 23
+      },
+      "F23": {
+        "text": "Passenger Ring 内有一面封闭黑暗的数据舱壁",
+        "established_in": 13,
+        "daniel_knows_from": 18,
+        "audience_knows_from": 13,
+        "note": "Shot 13 中 Daniel 全速穿过，不看屏幕也未注意舱壁；观众先看见。"
+      },
+      "F22": {
+        "text": "数据舱壁内可能保存着某种意识",
+        "established_in": 18,
+        "daniel_knows_from": 18,
+        "audience_knows_from": 18,
+        "certainty": "suspicion",
+        "confirmed_at": 19,
+        "requires_facts": [
+          "F23"
+        ],
+        "note": "Shot 18 是怀疑，不是知识。Daniel 此时尚不知自己是数字乘客，也不知自己的编号——身份答案留到 Shot 19。"
+      },
+      "F24": {
+        "text": "Bay 07 的门禁与控制已被人工切断，处于系统控制之外",
+        "established_in": 14,
+        "daniel_knows_from": 14,
+        "audience_knows_from": 14,
+        "note": "台词为 'Bay Seven is outside system control.'。关键在于：这不是 Daniel 的设计者权限被撤销——F05 全片有效，Shot 24 依赖它。"
+      },
+      "F26": {
+        "text": "按下停机控制将永久清除 Instance Zero，不是普通关机，也不会被恢复",
+        "established_in": 25,
+        "daniel_knows_from": 25,
+        "audience_knows_from": 25,
+        "note": "与 F06 不冲突：F06 的恢复机制服务于调查，而 Shot 24 归档后调查已结束、奖励条件未达成，恢复权利随之终止。系统画外音必须在他按下之前出现，停顿后他仍主动按下——代价必须是他知情选择的。"
+      }
+    },
+    "attempt_state": {
+      "04": {
+        "shots": [
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "daniel_enters_knowing": [
+          "F01",
+          "F02",
+          "F03",
+          "F04",
+          "F05",
+          "F06",
+          "F07",
+          "F08",
+          "F09",
+          "F10",
+          "F11",
+          "F12"
+        ],
+        "strategy": "冲进 Bay 07，用武力制止操作者"
+      },
+      "05": {
+        "shots": [
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26
+        ],
+        "daniel_enters_knowing": [
+          "F01",
+          "F02",
+          "F03",
+          "F04",
+          "F05",
+          "F06",
+          "F07",
+          "F08",
+          "F09",
+          "F10",
+          "F11",
+          "F12",
+          "F13",
+          "F14",
+          "F18",
+          "F24"
+        ],
+        "strategy": "放弃武力，改为交换信息与合作"
+      }
+    },
+    "mechanisms": {
+      "MECH-01": {
+        "text": "拉杆松手即锁死",
+        "demonstrated_in": 16,
+        "relied_on_in": 21
+      },
+      "MECH-02": {
+        "text": "拉杆与钥匙插槽相距一整个台面，一人够不到两处",
+        "demonstrated_in": 15,
+        "relied_on_in": 21
+      },
+      "MECH-03": {
+        "text": "设计者权限使调查结论必须归档",
+        "demonstrated_in": 4,
+        "relied_on_in": 24
+      }
+    }
+  },
+  "anchor_plan": {
+    "_component": "Agent 1 — 锚点决策（chain vs canonical_lookup）",
+    "_authoring_note": "循环片的关键：并非每个镜头都能从上一镜的末帧延续。凡是跨越循环边界、或回到一个当前没有活动链条的场景，都必须回查基准参考图，否则空间会漂。这正是逐帧续接法的盲区。",
+    "reference_library": {
+      "BAY07_A": {
+        "desc": "Bay 07 A 机位主参考图：控制台横贯画面，左端拉杆+047，右端钥匙插槽，后墙大屏与读数",
+        "status": "待建立",
+        "blocking": true,
+        "note": "Shot 15/19/21 全部依赖它。这是全片第一优先级的生成任务。"
+      },
+      "DANIEL_REF": {
+        "desc": "Daniel 面部与仿生身体基准",
+        "source_shot": 2,
+        "status": "已有"
+      },
+      "047_REF": {
+        "desc": "047 面部与服装基准",
+        "source_shot": 15,
+        "status": "待建立",
+        "depends_on": "BAY07_A"
+      },
+      "RING_REF": {
+        "desc": "Passenger Ring 基准：苏醒舱亮侧 + 数据舱壁暗侧",
+        "source_shot": 13,
+        "status": "待建立"
+      },
+      "JUNCTION_REF": {
+        "desc": "Arrival Power Junction 基准",
+        "source_shot": 10,
+        "status": "已有"
+      },
+      "ACTBAY_REF": {
+        "desc": "Bionic Activation Bay 基准",
+        "source_shot": 7,
+        "status": "已有"
+      }
+    },
+    "shots": {
+      "13": {
+        "anchor": "chain",
+        "from_shot": 12,
+        "reason": "紧接 Shot 12 末尾 Daniel 转身离开 Junction 的动作，同一轮、连续时间"
+      },
+      "14": {
+        "anchor": "chain",
+        "from_shot": 13,
+        "reason": "穿越的直接落点"
+      },
+      "15": {
+        "anchor": "canonical_lookup",
+        "reference": "BAY07_A",
+        "reason": "Bay 07 全片首次出现，没有任何可续接的链条。本镜同时负责建立 047_REF"
+      },
+      "16": {
+        "anchor": "chain",
+        "from_shot": 15,
+        "reason": "破门后动作的直接延续，不得跳接"
+      },
+      "17": {
+        "anchor": "canonical_lookup",
+        "reference": "ACTBAY_REF",
+        "reason": "跨越循环边界（Attempt 04 → 05）。上一镜是爆炸白场，链条已断"
+      },
+      "18": {
+        "anchor": "canonical_lookup",
+        "reference": "RING_REF",
+        "reason": "回到 Passenger Ring，但中间隔了一次死亡与重启，没有活动链条。必须回查 Shot 13 的基准，否则走廊会漂"
+      },
+      "19": {
+        "anchor": "canonical_lookup",
+        "reference": "BAY07_A",
+        "reason": "本片最典型的循环回跳：同一个房间第二次进入，但隔着一次死亡。逐帧续接在这里完全失效"
+      },
+      "20": {
+        "anchor": "chain",
+        "from_shot": 19,
+        "reason": "同一轮、同一空间的连续对话"
+      },
+      "21": {
+        "anchor": "chain_with_crosscheck",
+        "from_shot": 20,
+        "crosscheck_reference": "BAY07_A",
+        "reason": "续接上一镜，但 A 机位必须与 Shot 15 的 A 机位完全对齐，否则钥匙插槽的位置会漂——这会摧毁第三幕的合作动机。唯一需要双重校验的镜头"
+      },
+      "22": {
+        "anchor": "canonical_lookup",
+        "reference": "JUNCTION_REF",
+        "reason": "切到另一个空间，与 Bay 07 的链条无关"
+      },
+      "23": {
+        "anchor": "chain",
+        "from_shot": 21,
+        "skip_reason": "Shot 22 是切到 Junction 的平行剪辑，不在 Bay 07 的时间链上；本镜续接的是 Shot 21 的末帧",
+        "reason": "危机解除后的直接延续"
+      },
+      "24": {
+        "anchor": "chain",
+        "from_shot": 23,
+        "reason": "同场连续"
+      },
+      "25": {
+        "anchor": "canonical_lookup",
+        "reference": "ACTBAY_REF",
+        "reason": "切回激活舱，需与 Shot 01/02 同机位反向呼应"
+      },
+      "26": {
+        "anchor": "none",
+        "reason": "纯后期合成，不进入生成流程"
+      }
+    }
+  },
+  "routing": {
+    "_component": "Agent 3 — Model Router",
+    "_scope_honesty": "本 MVP 只输出路由决策与理由并写入日志，不做实时派发。派发需要真实 API 凭据与预算，三天内无法可靠验证，宣称做了会被技术评委看穿。界面必须明确标注『决策已给出，派发由人执行』。",
+    "rule": "二元规则：identity_critical == true → primary_tier；否则 → economy_tier。不要加权重、不要加多因子打分。",
+    "tiers": {
+      "primary_tier": {
+        "purpose": "身份关键镜头：Daniel 与 047 的面部、对峙、最终选择",
+        "guidance": "锁定单一主力模型，同批次生成，尽量不跨供应商",
+        "shots": [
+          15,
+          16,
+          19,
+          20,
+          21,
+          23,
+          24,
+          25
+        ]
+      },
+      "economy_tier": {
+        "purpose": "非身份镜头：空间建立、机械特写、复用素材",
+        "guidance": "最便宜的可用模型，失败重跑成本低",
+        "shots": [
+          13,
+          14,
+          17,
+          18,
+          22
+        ]
+      },
+      "post_only": {
+        "purpose": "不进入生成流程",
+        "shots": [
+          26
+        ]
+      }
+    },
+    "overrides": [
+      {
+        "shot": 16,
+        "note": "虽属 primary_tier，但本镜应拆成四段短生成（扑上去 / 拉杆弹起特写 / 047 的脸 / 爆炸复用）。其中拉杆特写与爆炸复用可走 economy_tier 或直接复用 Shot 06/11 素材",
+        "split_generation": true
+      },
+      {
+        "shot": 21,
+        "note": "A 机位与两个手部特写可分开路由：A 机位需 primary（空间关系），手部特写可 economy",
+        "split_generation": true
+      }
+    ],
+    "cost_note": "生成总量估计：primary 8 镜 + economy 5 镜 + 拆分后新增约 6 个短镜。identity-critical 镜头建议每镜预留 4—6 个 take，非身份镜头 2—3 个。"
+  },
+  "narrative_audit_rules": {
+    "_component": "Agent 5 — Loop-Divergence Auditor",
+    "_authoring_note": "全部是可机械判定的因果检查，不涉及主观审美判断。审计对象是 knowledge_ledger 与 anchor_plan，不读画面，不调 API。",
+    "rules": [
+      {
+        "id": "NA-01",
+        "name": "过早知情",
+        "text": "某镜的 must_show 或对白引用了一个 established_in 晚于本镜的事实",
+        "severity": "ERROR",
+        "check": "对每个 shot，检查其引用的 fact 的 established_in <= 本镜编号"
+      },
+      {
+        "id": "NA-02",
+        "name": "伏笔未回收",
+        "text": "某事实标了 must_pay_off_by，但在该镜之前没有任何镜头兑现它",
+        "severity": "WARN",
+        "check": "对每个带 must_pay_off_by 的 fact，检查 payoff 是否落在界限内"
+      },
+      {
+        "id": "NA-03",
+        "name": "观众落后于主角",
+        "text": "Daniel 依据某事实采取行动，但观众此时还没有得到该事实",
+        "severity": "WARN",
+        "check": "对每个 shot，若 daniel_knows_from <= shot < audience_knows_from，则观众看不懂他为什么这么做",
+        "note": "反向（观众先于 Daniel 知道）是合法的悬念，不报警——F09 就是有意为之。"
+      },
+      {
+        "id": "NA-04",
+        "name": "循环记忆倒退",
+        "text": "后一轮的 daniel_enters_knowing 丢失了前一轮已学到的事实",
+        "severity": "ERROR",
+        "check": "attempt_state 按轮次递增比对，后一轮必须是前一轮的超集",
+        "note": "Shot 07 的系统台词『Memory retained』把这条变成了硬约束。"
+      },
+      {
+        "id": "NA-05",
+        "name": "锚点断链",
+        "text": "某镜标为 chain，但来源镜不在同一 Attempt 内、或不与本镜时间连续",
+        "severity": "ERROR",
+        "check": "anchor 以 chain 开头时：(a) from_shot 必须与本镜属于同一 Attempt，否则 ERROR；(b) from_shot 必须小于本镜编号，否则 ERROR；(c) from_shot 若不是紧邻的前一镜，必须提供 skip_reason，否则 WARN",
+        "note": "跨循环边界不可能有活动链条——这是逐帧续接法的盲区，也是本片最常踩的坑。注意场景变化本身不是错误：人物走过去就是合法的连续续接（Shot 13→14 正是如此）；真正的错误是跨越一次死亡与重启。"
+      },
+      {
+        "id": "NA-06",
+        "name": "机制未经演示即被依赖",
+        "text": "某机制在 relied_on_in 被用来推动剧情，但 demonstrated_in 晚于它或不存在",
+        "severity": "ERROR",
+        "check": "mechanisms 表中 demonstrated_in < relied_on_in",
+        "note": "这是 deus ex machina 检查。Shot 21 的合作之所以成立，全靠 Shot 16 先演示过松手会锁死。"
+      },
+      {
+        "id": "NA-07",
+        "name": "事实依赖未应用的后期补丁",
+        "text": "某事实的 audience_knows_from 依赖一条 applied=false 的后期补丁",
+        "severity": "ERROR",
+        "check": "fact.audience_depends_on_patch 指向的补丁项的 applied 是否为 true",
+        "note": "这是本片当下真实存在的风险，不是演示编造的：P1 与 P2 都还没做。"
+      },
+      {
+        "id": "NA-08",
+        "name": "揭示缺少前置事实",
+        "text": "某事实标了 requires_facts，但前置事实的 audience_knows_from 晚于本事实",
+        "severity": "ERROR",
+        "check": "对每个带 requires_facts 的 fact，其所有前置的 audience_knows_from 必须更早",
+        "note": "F15（他就是数字乘客）要能被接住，F20 与 F21 必须先在场。"
+      }
+    ]
+  }
+}

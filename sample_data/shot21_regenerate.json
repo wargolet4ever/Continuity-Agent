@@ -1,0 +1,9 @@
+{
+  "shot_id": "21",
+  "mode": "本地规则（无需 API）",
+  "model": "Seedance",
+  "observation": "拉杆突然变形，钥匙插槽位置错误／靠近拉杆",
+  "expected_decision": "REGENERATE",
+  "expected_rule": "SHOT-21A",
+  "expected_fix": "固定拉杆在左、钥匙插槽在右，并锁定拉杆几何结构与缓慢升起的动作"
+}

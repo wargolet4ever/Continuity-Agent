@@ -1,0 +1,5 @@
+gradio==5.50.0
+Pillow>=10.2.0,<13
+imageio-ffmpeg>=0.5.1,<0.7
+# 可选：iPhone 的 .heic 解码。装不上也不影响启动（app.py 里是 try/except）。
+pillow-heif>=0.16
