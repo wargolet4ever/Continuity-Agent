@@ -1,14 +1,47 @@
-# Passenger Zero · AI 短片连戏检查器
+# Continuity Agent · AI 短片连戏检查器
 
 **给 AI 生成的短片当场记——查那些单帧看不出来的错。**
-
-*A continuity checker for AI-generated short films. It catches the errors you cannot see in a single frame. Chinese docs below; the tool runs offline with no API keys.*
 
 ![Shot 21：机位没动，控制手柄的形状却在变](docs/shot21_frames.png)
 
 上面是同一次 5 秒生成里按时间顺序抽的 5 帧。**机位没动，两个人的站位没动——但控制手柄的形状一直在变。**
 
 单看任何一帧，画面都完全合理。这类错误挑不出来，因为它不存在于任何一帧里，只存在于帧与帧之间。
+
+---
+
+## In English
+
+Those five frames come from **one** five-second AI generation. The camera never
+moves and neither do the actors — but the shape of the control handle keeps
+changing. Every single frame looks fine on its own. The error isn't *in* any
+frame; it only exists *between* them.
+
+Film sets have a job for this: the script supervisor, who watches whether this
+shot matches the last one. AI video generation has no such role — every shot is
+an independent call, and the model doesn't remember what it drew last time.
+
+**Continuity Agent compiles the story facts you lock down into per-shot visual
+checks, so cross-shot consistency becomes mechanically verifiable.**
+
+- **Runs with zero configuration.** No API key needed; it falls back to local
+  deterministic rules and labels the degradation in its execution trace.
+- **Outputs a decision, not a score:** `PASS` / `LOCAL FIX` (fixable in post,
+  don't re-render) / `REGENERATE` / `HUMAN REVIEW` (it refuses to guess).
+- **Every conclusion is tagged with its evidence level** — if you didn't upload
+  anything, it says plainly that it never looked at a picture.
+- **It does not generate video.** This is a verifier, not a generator.
+
+Built for a 3m22s hard-SF short film. It caught four real errors during that
+production — including one that could never be seen in a single frame, and one
+false-positive metric of our own that we deleted rather than tuned.
+
+```bash
+pip install -r requirements.txt && python app.py
+```
+
+Then click the second example button — that's the clip above, running the full
+audit chain in one click. **Documentation below is in Chinese.**
 
 ---
 
@@ -169,7 +202,7 @@ python -m unittest discover -s . -p 'test_*.py'
 
 ```yaml
 ---
-title: Passenger Zero · AI 短片连戏检查器
+title: Continuity Agent · AI 短片连戏检查器
 emoji: 🎬
 colorFrom: gray
 colorTo: red
