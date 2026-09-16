@@ -15,6 +15,7 @@ from PIL import Image
 
 from canon_loader import CanonStore
 from contracts import CONTRACT_VERSION, validate_audit_result
+from rules import RuleContext, RuleRegistry, default_rule_registry
 from visual_metrics import image_metrics, image_similarity
 
 OBSERVATION_OPTIONS = {
@@ -33,68 +34,6 @@ OBSERVATION_OPTIONS = {
     "047 与 Daniel 左右轴线错误": "axis_wrong",
     "拉杆的运动方式错误": "lever_motion_wrong",
     "Bay 07 出现多余人物": "extra_person",
-}
-
-
-OBSERVATION_RULES = {
-    "small_screen": (
-        "LOC-B03",
-        "Prop Continuity",
-        "画面出现了 canon 禁止的小型显示设备。",
-    ),
-    "console_deformation": (
-        "LOC-B06",
-        "Temporal Geometry",
-        "按时间顺序对比关键帧，控制台或固定机械组件发生了形变／重构。",
-    ),
-    "key_wrong": ("SHOT-21A", "Scene + Prop", "钥匙插槽未固定在控制台右端。"),
-    "both_hands_leave": (
-        "SHOT-19A",
-        "Action Continuity",
-        "047 双手同时离开拉杆，破坏了核心机制。",
-    ),
-    "red_attempt05": (
-        "LOOP-05B",
-        "Loop Divergence",
-        "Attempt 05 出现了属于 Attempt 04 的红色警报光。",
-    ),
-    "system_body": (
-        "CHAR-S01",
-        "System Embodiment",
-        "主系统被赋予了 canon 禁止的视觉身体。",
-    ),
-    "daniel_identity": (
-        "CHAR-D01",
-        "Character Identity",
-        "Daniel 与 Shot 02 基准帧不一致。",
-    ),
-    "047_identity": (
-        "CHAR-0401",
-        "Character Identity",
-        "047 与 Shot 15 基准帧不一致。",
-    ),
-    "moving_camera": ("CAM-02", "Camera Continuity", "镜头包含 canon 禁止的机位移动。"),
-    "readable_text": ("TEXT-01", "UI/Text", "生成画面出现可读文字；应在 AE 中覆盖。"),
-    "performance_uncertain": (
-        "CHAR-0403",
-        "Performance",
-        "047 的表演动机无法仅靠自动规则可靠判定。",
-    ),
-    "axis_wrong": (
-        "CAM-01",
-        "Axis Continuity",
-        "047、Daniel 或钥匙插槽的左右关系越轴。",
-    ),
-    "lever_motion_wrong": (
-        "SHOT-21B",
-        "Action Continuity",
-        "Shot 21 的拉杆没有缓缓升起。",
-    ),
-    "extra_person": (
-        "LOC-B05",
-        "Scene Continuity",
-        "Bay 07 出现了第四个人物或人形轮廓。",
-    ),
 }
 
 
@@ -143,8 +82,9 @@ def _extract_json(text: str) -> dict[str, Any]:
 
 
 class ContinuityAnalyzer:
-    def __init__(self, canon: CanonStore):
+    def __init__(self, canon: CanonStore, rule_registry: RuleRegistry | None = None):
         self.canon = canon
+        self.rule_registry = rule_registry or default_rule_registry()
 
     @property
     def api_configured(self) -> bool:
@@ -200,41 +140,28 @@ class ContinuityAnalyzer:
         observations: list[str],
         previous_image: Any,
         current_image: Any,
+        next_image: Any = None,
+        video_frames: list[Any] | None = None,
+        video_timestamps: list[float] | None = None,
     ) -> list[dict[str, Any]]:
         pack = self.canon.compile_rule_pack(shot_id)
         observation_keys = {
             OBSERVATION_OPTIONS.get(value, value) for value in observations or []
         }
-        issues: list[dict[str, Any]] = []
-        allowed = {r["id"] for r in pack["rules"]}
-        for key in observation_keys:
-            if key in ("manual_pass_confirmed", None):
-                continue
-            mapping = OBSERVATION_RULES.get(key)
-            if key == "performance_uncertain" and int(shot_id) == 16:
-                mapping = ("CHAR-0405", "Performance", "Shot 16 惊恐表演需要人工确认。")
-            if key == "small_screen" and int(shot_id) == 14:
-                mapping = ("LOC-X03", "Prop Continuity", "舱门外出现新增显示设备。")
-            if mapping and mapping[0] in allowed:
-                issues.append(self._issue_from_rule(*mapping))
-
-        metrics = image_metrics(current_image)
-        if (
-            str(pack.get("attempt_id")) == "05"
-            and metrics.get("red_ratio", 0) >= 0.35
-            and not any(item["rule_id"] == "LOOP-05B" for item in issues)
-        ):
-            issues.append(
-                self._issue_from_rule(
-                    "LOOP-05B",
-                    "Loop Divergence",
-                    f"自动色彩候选：饱和红像素占比 {metrics['red_ratio']:.1%}，达到 35% 阈值。颜色无法证明警报来源，需人工确认。",
-                    confidence=0.76,
-                )
-            )
-            issues[-1]["requires_confirmation"] = True
-
-        return issues
+        context = RuleContext(
+            shot_id=str(shot_id),
+            canon=self.canon,
+            pack=pack,
+            observations=frozenset(
+                key for key in observation_keys if isinstance(key, str)
+            ),
+            previous_image=previous_image,
+            current_image=current_image,
+            next_image=next_image,
+            video_frames=tuple(video_frames or ()),
+            video_timestamps_s=tuple(video_timestamps or ()),
+        )
+        return self.rule_registry.evaluate(context, self._issue_from_rule)
 
     def _remote_review(
         self,
@@ -493,7 +420,13 @@ class ContinuityAnalyzer:
             OBSERVATION_OPTIONS.get(value, value) for value in observations or []
         }
         local_issues = self._local_issues(
-            shot_id, observations, previous_image, current_image
+            shot_id,
+            observations,
+            previous_image,
+            current_image,
+            next_image,
+            video_frames,
+            video_timestamps,
         )
         api_error = None
         self._last_retries = 0
