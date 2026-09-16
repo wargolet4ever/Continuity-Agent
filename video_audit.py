@@ -25,9 +25,12 @@ from PIL import Image
 # 被 imageio-ffmpeg 直接信任、根本不校验，指错地方就会在真正抽帧时抛 WinError 2。
 # 所以这里必须**真的把二进制跑一次**，而不是只看 import 成没成功。
 FFMPEG_EXE: str | None = None
+imageio_ffmpeg: Any | None = None
 
 
 def _probe_ffmpeg() -> tuple[bool, str]:
+    global imageio_ffmpeg
+
     try:
         import imageio_ffmpeg as _mod
     except Exception:  # noqa: BLE001
@@ -35,13 +38,15 @@ def _probe_ffmpeg() -> tuple[bool, str]:
             "未安装 imageio-ffmpeg，视频审查不可用；图片审查不受影响。"
             "装上即可开启：pip install -r requirements.txt"
         )
-    globals()["imageio_ffmpeg"] = _mod
+    imageio_ffmpeg = _mod
     try:
         exe = _mod.get_ffmpeg_exe()
     except Exception as exc:  # noqa: BLE001
         return False, f"找不到 ffmpeg（{exc}），视频审查不可用；图片审查不受影响。"
     try:
-        done = subprocess.run([exe, "-version"], capture_output=True, timeout=20)
+        done = subprocess.run(
+            [exe, "-version"], capture_output=True, check=False, timeout=20
+        )
     except (OSError, subprocess.SubprocessError) as exc:
         return False, (
             f"ffmpeg 找到了但跑不起来（{type(exc).__name__}），视频审查不可用；"
@@ -63,6 +68,8 @@ VIDEO_SUPPORTED, VIDEO_UNAVAILABLE_REASON = _probe_ffmpeg()
 MAX_VIDEO_DURATION_S = 20.0
 MAX_VIDEO_SIZE_MB = 50
 DEFAULT_FRAME_COUNT = 5
+MAX_FRAME_WIDTH = 1280
+MAX_FRAME_HEIGHT = 720
 SUPPORTED_EXTENSIONS = {".mp4", ".mov", ".m4v", ".webm"}
 
 
@@ -99,9 +106,11 @@ def _video_path(value: Any) -> Path:
     return path
 
 
-def _duration(path: Path) -> float:
+def _video_info(path: Path) -> tuple[float, int]:
+    if imageio_ffmpeg is None:
+        raise ValueError(VIDEO_UNAVAILABLE_REASON or "ffmpeg 不可用，无法读取视频。")
     try:
-        _, duration = imageio_ffmpeg.count_frames_and_secs(str(path))
+        frame_total, duration = imageio_ffmpeg.count_frames_and_secs(str(path))
     except FileNotFoundError as exc:
         # ffmpeg 二进制在启动之后被删了／被杀软隔离了
         raise ValueError(
@@ -112,17 +121,31 @@ def _duration(path: Path) -> float:
     duration = float(duration or 0)
     if not math.isfinite(duration) or duration <= 0:
         raise ValueError("视频时长无效。")
+    frame_total = int(frame_total or 0)
+    if frame_total <= 0:
+        raise ValueError("视频不包含可读取的画面帧。")
     if duration > MAX_VIDEO_DURATION_S:
         raise ValueError(
             f"视频最长 {MAX_VIDEO_DURATION_S:.0f} 秒（当前 {duration:.1f} 秒）；"
             "请先裁出需要审查的单个镜头。"
         )
-    return duration
+    return duration, frame_total
 
 
 def _extract_frame(path: Path, timestamp: float) -> Image.Image:
+    if not FFMPEG_EXE:
+        raise ValueError(VIDEO_UNAVAILABLE_REASON or "ffmpeg 不可用，无法抽取视频帧。")
+
+    # Scale inside ffmpeg, before pixels enter Python.  Scaling only with
+    # Pillow after decoding would make an 8K upload materialise as a very
+    # large PNG in memory, which is unsafe on free CPU hosting tiers.
+    scale_filter = (
+        f"scale=w='min({MAX_FRAME_WIDTH},iw)':h='min({MAX_FRAME_HEIGHT},ih)':"
+        "force_original_aspect_ratio=decrease"
+    )
     command = [
         FFMPEG_EXE,
+        "-nostdin",
         "-v",
         "error",
         "-ss",
@@ -131,6 +154,11 @@ def _extract_frame(path: Path, timestamp: float) -> Image.Image:
         str(path),
         "-map",
         "0:v:0",
+        "-an",
+        "-sn",
+        "-dn",
+        "-vf",
+        scale_filter,
         "-frames:v",
         "1",
         "-f",
@@ -157,7 +185,8 @@ def _extract_frame(path: Path, timestamp: float) -> Image.Image:
         raise ValueError(f"视频关键帧提取失败。{detail}")
     try:
         frame = Image.open(io.BytesIO(completed.stdout)).convert("RGB")
-        frame.thumbnail((1280, 720))
+        # Defensive guard for mocked/custom ffmpeg binaries that ignore -vf.
+        frame.thumbnail((MAX_FRAME_WIDTH, MAX_FRAME_HEIGHT))
         return frame.copy()
     except (OSError, ValueError) as exc:
         raise ValueError("提取出的关键帧无法读取。") from exc
@@ -169,10 +198,13 @@ def sample_video(value: Any, frame_count: int = DEFAULT_FRAME_COUNT) -> VideoSam
     if not VIDEO_SUPPORTED:
         raise ValueError(VIDEO_UNAVAILABLE_REASON)
     path = _video_path(value)
-    duration = _duration(path)
+    duration, frame_total = _video_info(path)
     count = max(3, min(7, int(frame_count)))
-    # Avoid asking the decoder for the exact container end timestamp.
-    end = max(0.0, duration - min(0.08, duration / 20))
+    # The container duration points *after* the last frame.  The old fixed
+    # 80 ms margin still missed the last frame of low-FPS clips (for example,
+    # 6 FPS has a 167 ms frame interval) and ffmpeg returned an empty pipe.
+    estimated_frame_interval = duration / frame_total
+    end = max(0.0, duration - max(0.08, estimated_frame_interval))
     timestamps = [round(end * index / (count - 1), 3) for index in range(count)]
     frames = [_extract_frame(path, timestamp) for timestamp in timestamps]
     return VideoSample(path, round(duration, 3), timestamps, frames)
