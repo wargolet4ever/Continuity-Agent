@@ -13,6 +13,8 @@ import json
 import re
 from typing import Any
 
+from contracts import CONTRACT_VERSION
+
 # 五拍骨架。少于 5 镜时按 BEAT_SUBSETS 取子集，保证仍是完整的一条因果链。
 BEATS = [
     ("establish", "建立", "交代人物身处何地、正在做什么"),
@@ -284,6 +286,7 @@ def build_canon_draft(story: dict[str, Any], shots: list[dict[str, Any]]) -> dic
     return {
         "_readme": "CREATE 模式生成的 canon 草案。结构与成片 canon 一致，可被 CanonStore 载入并跑因果审计。它是骨架，不是成品——视觉规则的密度远低于人工维护的 canon。",
         "meta": {
+            "contract_version": CONTRACT_VERSION,
             "version": "draft-1",
             "script_version": f"CREATE 草案 · {story.get('title', '')}",
             "principle": "每条规则都必须能从一张截图上证伪。",

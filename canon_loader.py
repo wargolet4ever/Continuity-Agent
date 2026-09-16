@@ -5,6 +5,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
+from contracts import validate_canon_document
+
 LOCATION_ALIASES = {
     "passenger_ring 导航屏": "passenger_ring",
     "passenger_ring_导航屏": "passenger_ring",
@@ -29,7 +31,7 @@ class CanonStore:
     def __init__(self, path: str | Path):
         self.path = Path(path)
         with self.path.open("r", encoding="utf-8") as handle:
-            self.data: dict[str, Any] = json.load(handle)
+            self.data: dict[str, Any] = validate_canon_document(json.load(handle))
         self._rule_index = self._build_rule_index()
 
     def _build_rule_index(self) -> dict[str, dict[str, Any]]:
