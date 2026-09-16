@@ -1,6 +1,7 @@
 {
   "_readme": "《第零号乘客 / Passenger Zero》连续性规则库 v1，配合 Loop Continuity & Take Curator Agent 使用。所有规则由叙事监督维护，代码侧只读取不改写。核心原则见 meta.principle。",
   "meta": {
+    "contract_version": "1.0",
     "version": "1.4.2",
     "script_version": "v3 成片锁定版（影片已全部生成并剪辑完成）",
     "updated": "2026-09-10",

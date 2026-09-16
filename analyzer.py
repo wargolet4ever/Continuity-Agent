@@ -11,8 +11,10 @@ import urllib.error
 import urllib.request
 from typing import Any
 
-from canon_loader import CanonStore
 from PIL import Image
+
+from canon_loader import CanonStore
+from contracts import CONTRACT_VERSION, validate_audit_result
 from visual_metrics import image_metrics, image_similarity
 
 OBSERVATION_OPTIONS = {
@@ -167,6 +169,7 @@ class ContinuityAnalyzer:
             "rule": rule.get("text", "Unregistered visual observation"),
             "note": rule.get("note", ""),
             "minimal_fix": minimal_fix or self._default_fix(rule_id, severity),
+            "evidence_ids": [],
         }
 
     @staticmethod
@@ -450,28 +453,42 @@ class ContinuityAnalyzer:
         video_timestamps: list[float] | None = None,
     ) -> dict[str, Any]:
         pack = self.canon.compile_rule_pack(shot_id)
+        media_kind = (
+            "video"
+            if video_frames
+            else "image"
+            if current_image is not None
+            else "text"
+        )
         if not pack["generation_required"]:
-            return {
-                "shot_id": str(shot_id),
-                "attempt_id": pack["attempt_id"],
-                "location": pack["location"],
-                "mode": mode,
-                "decision": "SKIP",
-                "score": None,
-                "issues": [],
-                "rule_count": 0,
-                "metrics": {},
-                "api_error": None,
-                "api_reviewed": False,
-                "needs_human_review": False,
-                "human_review_count": 0,
-                "anchor": pack.get("anchor", {}),
-                "routing_tier": pack.get("routing_tier", "post_only"),
-                "routing": pack.get("routing", {}),
-                "revised_prompt": "",
-                "canon_version": self.canon.data["meta"]["version"],
-                "input_prompt": current_prompt,
-            }
+            return validate_audit_result(
+                {
+                    "contract_version": CONTRACT_VERSION,
+                    "shot_id": str(shot_id),
+                    "attempt_id": pack["attempt_id"],
+                    "location": pack["location"],
+                    "mode": mode,
+                    "decision": "SKIP",
+                    "score": None,
+                    "issues": [],
+                    "evidence_assets": [],
+                    "rule_count": 0,
+                    "metrics": {},
+                    "api_error": None,
+                    "api_reviewed": False,
+                    "needs_human_review": False,
+                    "human_review_count": 0,
+                    "anchor": pack.get("anchor", {}),
+                    "routing_tier": pack.get("routing_tier", "post_only"),
+                    "routing": pack.get("routing", {}),
+                    "revised_prompt": "",
+                    "canon_version": self.canon.data["meta"]["version"],
+                    "input_prompt": current_prompt,
+                    "media_kind": media_kind,
+                    "video_timestamps_s": list(video_timestamps or []),
+                    "api_retries": 0,
+                }
+            )
         manual_pass = "manual_pass_confirmed" in {
             OBSERVATION_OPTIONS.get(value, value) for value in observations or []
         }
@@ -534,40 +551,44 @@ class ContinuityAnalyzer:
             )
             if value is not None
         ]
-        return {
-            "shot_id": str(shot_id),
-            "attempt_id": pack.get("attempt_id"),
-            "location": pack.get("location"),
-            "mode": mode,
-            "score": score,
-            "decision": decision,
-            "api_reviewed": api_reviewed,
-            "needs_human_review": human_count > 0
-            or decision == "HUMAN REVIEW"
-            or api_error is not None,
-            "human_review_count": human_count,
-            "anchor": pack.get("anchor", {}),
-            "routing_tier": pack.get("routing_tier", "unknown"),
-            "routing": pack.get("routing", {}),
-            "canon_version": self.canon.data["meta"]["version"],
-            "input_prompt": current_prompt,
-            "issues": issues,
-            "metrics": {
-                **metrics,
-                "similarity_to_previous": similarity_previous,
-                "similarity_to_next": similarity_next,
-                "video_frame_count": len(video_frames or []),
-                "video_min_adjacent_similarity": (
-                    min(sequence_similarities) if sequence_similarities else None
-                ),
-            },
-            "media_kind": "video" if video_frames else "image" if current_image is not None else "text",
-            "video_timestamps_s": list(video_timestamps or []),
-            "api_error": api_error,
-            "api_retries": self._last_retries,
-            "revised_prompt": self._revised_prompt(pack, current_prompt, issues),
-            "rule_count": len(pack["rules"]),
-        }
+        return validate_audit_result(
+            {
+                "contract_version": CONTRACT_VERSION,
+                "shot_id": str(shot_id),
+                "attempt_id": pack.get("attempt_id"),
+                "location": pack.get("location"),
+                "mode": mode,
+                "score": score,
+                "decision": decision,
+                "api_reviewed": api_reviewed,
+                "needs_human_review": human_count > 0
+                or decision == "HUMAN REVIEW"
+                or api_error is not None,
+                "human_review_count": human_count,
+                "anchor": pack.get("anchor", {}),
+                "routing_tier": pack.get("routing_tier", "unknown"),
+                "routing": pack.get("routing", {}),
+                "canon_version": self.canon.data["meta"]["version"],
+                "input_prompt": current_prompt,
+                "issues": issues,
+                "evidence_assets": [],
+                "metrics": {
+                    **metrics,
+                    "similarity_to_previous": similarity_previous,
+                    "similarity_to_next": similarity_next,
+                    "video_frame_count": len(video_frames or []),
+                    "video_min_adjacent_similarity": (
+                        min(sequence_similarities) if sequence_similarities else None
+                    ),
+                },
+                "media_kind": media_kind,
+                "video_timestamps_s": list(video_timestamps or []),
+                "api_error": api_error,
+                "api_retries": self._last_retries,
+                "revised_prompt": self._revised_prompt(pack, current_prompt, issues),
+                "rule_count": len(pack["rules"]),
+            }
+        )
 
 
 def result_markdown(result: dict[str, Any]) -> str:
