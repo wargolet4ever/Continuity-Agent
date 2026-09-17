@@ -68,9 +68,7 @@ class NoFfmpegTests(unittest.TestCase):
 
     def test_demo_buttons_degrade_instead_of_crashing(self):
         """演示按钮依赖示例视频；没 ffmpeg 就退回纯文字审查，而不是抛异常。"""
-        text, head, issues, detail, revised, trace, state = self.app.run_demo(
-            "B", self.app.new_session()
-        )
+        _, head, _, detail, *_ = self.app.run_demo("B", self.app.new_session())
         self.assertIn("重新生成", head)
         self.assertIn("我没看过画面", head)
         self.assertIn("USER-REPORTED", detail)

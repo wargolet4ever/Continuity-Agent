@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://continuity-agent.local/schemas/audit-report-v1.schema.json",
+  "title": "Continuity Agent audit report v1",
+  "type": "object",
+  "required": [
+    "report_version",
+    "generated_at",
+    "source",
+    "provenance",
+    "summary",
+    "audit_result",
+    "execution_trace",
+    "integrity"
+  ],
+  "properties": {
+    "report_version": {"const": "1.0"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "source": {
+      "type": "object",
+      "required": ["filename", "media_kind"],
+      "properties": {
+        "filename": {"type": "string"},
+        "media_kind": {"enum": ["text", "image", "image_sequence", "video"]}
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["evidence_source", "evidence_note", "api_reviewed", "canon_version"],
+      "properties": {
+        "evidence_source": {
+          "enum": [
+            "USER-REPORTED RULE TRIAGE",
+            "RULE + PIXEL CHECK",
+            "VISUAL AUDIT",
+            "VIDEO FRAME + RULE CHECK",
+            "VIDEO VISUAL AUDIT"
+          ]
+        },
+        "evidence_note": {"type": "string", "minLength": 1},
+        "api_reviewed": {"type": "boolean"},
+        "canon_version": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "shot_id",
+        "decision",
+        "score",
+        "issue_count",
+        "severity_counts",
+        "needs_human_review"
+      ],
+      "properties": {
+        "shot_id": {"type": "string", "minLength": 1},
+        "decision": {"enum": ["PASS", "LOCAL FIX", "REGENERATE", "HUMAN REVIEW", "SKIP"]},
+        "score": {"type": ["integer", "null"], "minimum": 0, "maximum": 100},
+        "issue_count": {"type": "integer", "minimum": 0},
+        "severity_counts": {
+          "type": "object",
+          "required": ["regenerate", "local_fix", "human_review"],
+          "properties": {
+            "regenerate": {"type": "integer", "minimum": 0},
+            "local_fix": {"type": "integer", "minimum": 0},
+            "human_review": {"type": "integer", "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "needs_human_review": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "audit_result": {
+      "$ref": "continuity-v1.schema.json#/$defs/AuditResult"
+    },
+    "execution_trace": {
+      "type": "object",
+      "required": ["total_ms", "steps"],
+      "properties": {
+        "total_ms": {"type": "integer", "minimum": 0},
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["index", "name", "kind", "duration_ms", "ok", "retries", "source", "detail"],
+            "properties": {
+              "index": {"type": "integer", "minimum": 1},
+              "name": {"type": "string", "minLength": 1},
+              "kind": {"enum": ["local", "model"]},
+              "duration_ms": {"type": "integer", "minimum": 0},
+              "ok": {"type": "boolean"},
+              "retries": {"type": "integer", "minimum": 0},
+              "source": {"type": "string"},
+              "detail": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "integrity": {
+      "type": "object",
+      "required": ["algorithm", "payload_sha256"],
+      "properties": {
+        "algorithm": {"const": "sha256"},
+        "payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

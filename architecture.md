@@ -13,6 +13,7 @@ app.py                 只做界面与事件绑定，不写任何规则
   │     ├── analyzer.py      AUDIT：本地规则、多模态调用、四档决策
   │     └── canon_loader.py  规则编译、锚点、路由、lint、因果审计
   ├── package.py       Production Package 打包
+  ├── audit_report.py  单次审计 JSON／Markdown／校验清单打包
   ├── take_log.py      25 字段 CSV 生产日志
   ├── video_audit.py   上传视频校验 + 5 帧时间序列抽取
   ├── video_provider.py 受控视频生成 Provider（默认关闭）
@@ -96,13 +97,26 @@ app.py                 只做界面与事件绑定，不写任何规则
 
 1. **不渲染原始日志表** —— 界面上只有聚合统计
 2. **不绑定回调** —— `refresh_log` 在 `SHOW_RAW_LOGS != "1"` 时根本不进入事件表，因此也不出现在 `/gradio_api/info`，无法被公开 API 调用。仅仅"隐藏组件"是不够的，Gradio 的事件是可以被直接调的
-3. **不作为返回值** —— `do_audit()` 从 6 个输出减为 5 个，日志行不再随审计结果返回
+3. **不作为返回值** —— `do_audit()` 的任何输出都不携带全局日志行；新增的下载文件也只含本次审计
 
 另外 `show_error` 绑定到同一个开关：默认关闭，避免 traceback 把容器内绝对路径推到浏览器。
 
 **默认即安全**：忘记配环境变量不会导致泄露；要放开必须显式设置 `SHOW_RAW_LOGS=1`。
 
 `new_session()` 永远返回挂载成片 canon 的干净状态——`test 8` 验证了新会话不会引用他人的临时 canon。
+
+## 报告产出
+
+`audit_report.py` 把一次通过 `validate_audit_result()` 的结果封装为报告 v1：
+
+- `report.json`：审计结果、证据来源、canon 版本、汇总与完整执行轨迹；
+- `report.md`：给剪辑／制片阅读的结论、最小修复与证据限制；
+- `manifest.json`：前两项的 SHA-256 和字节数。
+
+报告生成时再次校验汇总数字与底层 `AuditResult` 是否一致，并对不含 `integrity` 的整个
+JSON payload 计算 SHA-256。文件名只保留 basename，上传素材本体不进入 ZIP，全局
+`take_log.csv` 也不进入报告。外部适配器应以 `schemas/audit-report-v1.schema.json` 为入口，
+再通过其中的 `$ref` 读取既有 `AuditResult` 契约。
 
 ## 日志字段（25 个，v1.2 的 19 个 + 新增 6 个）
 
@@ -207,7 +221,7 @@ VIDEO_ACCESS_CODE=<secret>
 
 ## 当前验证状态
 
-- 86 项单元与集成测试通过，其中 MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**
+- 158 项单元与集成测试通过，其中 MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**
 - mock 覆盖：V1 payload 结构、task_id、两次 429 后恢复、file_id、下载地址、
   权限不足不重试、首帧缺失在发请求前拒绝、费用与并发门槛
 - Feature Flag 关闭时，Gradio 组件树不包含视频生成面板，且 `prepare_video` /

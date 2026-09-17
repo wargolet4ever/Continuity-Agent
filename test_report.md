@@ -1,6 +1,9 @@
 # 最终测试报告
 
-## A. 单元与集成测试（101 项，全部通过）
+## A. 单元与集成测试（158 项，全部通过）
+
+以下为首次完整交付时的逐类明细；后续加入的数据契约、规则插件、身份校准、CPU 视觉规则
+与报告产出测试均已进入同一条全量回归命令。当前以末尾的 `Ran 158 tests` 为准。
 
 ```
 运行时间：2026-09-14T12:18:04+00:00
@@ -112,7 +115,7 @@ test_video_audit.VideoAuditTests  —— 7 项
    ✓ test_shot21_video_routes_all_three_observed_failures
    ✓ test_video_multimodal_429_retries_twice_then_degrades
 
-Ran 86 tests in 9.247s
+Ran 158 tests in 10.561s
 OK
 ```
 
@@ -317,6 +320,21 @@ Exception: Couldn't start the app because
 
 另外新增 `diagnose.py`：一条命令查清包在不在、路径解析到哪、文件存不存在、
 真跑一次会怎样，并给出对应修法。
+
+## C8. 审计报告产出（5 项，`test_audit_report.py`）
+
+每次单镜审计会生成一个 ZIP，包含 `report.json`、`report.md` 和 `manifest.json`。
+
+| 测试 | 断言 |
+|---|---|
+| `test_report_envelope_matches_validated_result` | 汇总、证据来源与底层 `AuditResult` 一致；源文件只留 basename |
+| `test_markdown_keeps_evidence_limit_and_action` | 人读报告保留规则、最小修复与“系统没看画面”等证据边界 |
+| `test_bundle_contains_json_markdown_and_verified_manifest` | ZIP 三文件齐全，manifest 的 SHA-256 与实际字节一致 |
+| `test_machine_readable_report_schema_tracks_runtime_constants` | 外部 JSON Schema 与运行时报告版本、五档证据来源同步 |
+| `test_tampered_summary_or_payload_digest_is_rejected` | 汇总被改或 payload 哈希不符时拒绝通过 |
+
+报告不复制源媒体，不包含全局生产日志；UI、隐私、视频和无 ffmpeg 降级测试也覆盖了新增
+下载输出，确保 Gradio 返回值没有错位、另一个会话拿不到本次报告内容。
 
 ## D. 安全检查
 
