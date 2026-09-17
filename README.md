@@ -189,9 +189,13 @@ continuity schedule --json   # adapter-readable status
 continuity schedule --strict # exit 30 until all gates are complete
 ```
 
-The current repository completes D1–D9, with D5 explicitly using the provisional-calibration fallback.
-D10 is next. D11 remains incomplete until a real external user completes an audit; a self-run demo does
+The current repository completes D1–D10, with D5 explicitly using the provisional-calibration fallback.
+D11 is next and remains incomplete until a real external user completes an audit; a self-run demo does
 not satisfy that gate. See [`roadmap/v1-14-day.md`](roadmap/v1-14-day.md).
+
+Before a public CPU deployment, run `continuity deploy-check --target modelscope` (or `huggingface`). It blocks
+unsafe raw-log exposure and incomplete paid-video configuration, reports the zero-API-cost default, and verifies
+the public upload limits. See the [deployment and cost runbook](docs/deployment-cost.md).
 
 ## Tests
 
@@ -199,7 +203,7 @@ not satisfy that gate. See [`roadmap/v1-14-day.md`](roadmap/v1-14-day.md).
 python -m unittest discover -s . -p 'test_*.py'
 ```
 
-172 tests, all passing. MiniMax and multimodal failure paths are entirely mocked — **no external requests, no cost**. Full report in [`test_report.md`](test_report.md).
+182 tests, all passing. MiniMax and multimodal failure paths are entirely mocked — **no external requests, no cost**. Full report in [`test_report.md`](test_report.md).
 
 ## Docs
 
@@ -207,7 +211,8 @@ python -m unittest discover -s . -p 'test_*.py'
 |---|---|
 | [`README.zh-CN.md`](README.zh-CN.md) | 中文文档 |
 | [`architecture.md`](architecture.md) | Architecture, state machine, provider mapping, cost and retry policy |
-| [`test_report.md`](test_report.md) | Full report for all 172 tests |
+| [`test_report.md`](test_report.md) | Full report for all 182 tests |
+| [`docs/deployment-cost.md`](docs/deployment-cost.md) | CPU deployment, health, rollback, secrets, limits, and cost boundaries |
 | [`roadmap/v1-14-day.md`](roadmap/v1-14-day.md) | Human-readable v1 schedule and D5/D7/D11 gates |
 | [`roadmap/v1-14-day.json`](roadmap/v1-14-day.json) | Machine-readable schedule source of truth |
 | [`schemas/v1-schedule-v1.schema.json`](schemas/v1-schedule-v1.schema.json) | Schedule data contract |

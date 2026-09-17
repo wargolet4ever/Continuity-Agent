@@ -188,7 +188,9 @@
         "Record resource limits, secrets, cost ceilings, and rollback steps."
       ],
       "deliverables": [
-        {"path": "docs/deployment-cost.md", "description": "Deployment, health, rollback, and cost runbook."}
+        {"path": "docs/deployment-cost.md", "description": "Deployment, health, rollback, and cost runbook."},
+        {"path": "deployment.py", "description": "Public deployment preflight and upload boundaries."},
+        {"path": "test_deployment.py", "description": "Deployment safety, cost, and resource-limit regressions."}
       ],
       "depends_on": [9],
       "gate": null

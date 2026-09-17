@@ -8,6 +8,12 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from deployment import (
+    EXIT_DEPLOYMENT_UNSAFE,
+    TARGETS,
+    inspect_deployment,
+    render_deployment_check,
+)
 from film_pipeline import (
     EXIT_PIPELINE_ERROR,
     FilmPipelineError,
@@ -103,6 +109,27 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="return 30 until every day and hard gate is complete",
     )
+    deploy_check = subcommands.add_parser(
+        "deploy-check",
+        help="verify public deployment safety, dependencies, and cost boundaries",
+    )
+    deploy_check.add_argument(
+        "--target",
+        choices=TARGETS,
+        default="local",
+        help="deployment target (default: local)",
+    )
+    deploy_check.add_argument(
+        "--root",
+        type=Path,
+        default=REPOSITORY_ROOT,
+        help="repository root to inspect",
+    )
+    deploy_check.add_argument(
+        "--json",
+        action="store_true",
+        help="print only the machine-readable preflight report",
+    )
     return parser
 
 
@@ -148,6 +175,14 @@ def _print_human(run) -> None:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    if args.command == "deploy-check":
+        report = inspect_deployment(args.root, target=args.target)
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, sort_keys=True))
+        else:
+            print(render_deployment_check(report))
+        return EXIT_DEPLOYMENT_UNSAFE if report["status"] == "UNSAFE" else 0
+
     if args.command == "schedule":
         try:
             evaluation = evaluate_schedule(load_schedule(args.file), args.root)

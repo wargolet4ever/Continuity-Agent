@@ -38,15 +38,16 @@ class ScheduleContractTests(unittest.TestCase):
         self.assertEqual(schema["properties"]["schedule_version"]["const"], "1.0")
         self.assertEqual(schema["properties"]["duration_days"]["const"], 14)
 
-    def test_current_repository_is_complete_through_day_nine(self):
+    def test_current_repository_is_complete_through_day_ten(self):
         evaluation = evaluate_schedule(load_schedule(SCHEDULE_PATH), ROOT)
 
-        self.assertEqual(evaluation["complete_days"], 9)
-        self.assertEqual(evaluation["next_day"], 10)
+        self.assertEqual(evaluation["complete_days"], 10)
+        self.assertEqual(evaluation["next_day"], 11)
         self.assertEqual(evaluation["days"][4]["status"], "DONE_WITH_FALLBACK")
         self.assertEqual(evaluation["days"][6]["status"], "DONE")
         self.assertEqual(evaluation["days"][8]["status"], "DONE")
-        self.assertEqual(evaluation["days"][10]["status"], "BLOCKED")
+        self.assertEqual(evaluation["days"][9]["status"], "DONE")
+        self.assertEqual(evaluation["days"][10]["status"], "GATE_PENDING")
 
     def test_external_user_gate_has_no_fallback(self):
         schedule = load_schedule(SCHEDULE_PATH)
@@ -69,7 +70,7 @@ class ScheduleContractTests(unittest.TestCase):
 
         result = json.loads(stdout.getvalue())
         self.assertEqual(exit_code, 0)
-        self.assertEqual(result["next_day"], 10)
+        self.assertEqual(result["next_day"], 11)
         self.assertNotIn(str(ROOT), stdout.getvalue())
 
     def test_strict_command_returns_incomplete_exit_code(self):

@@ -199,9 +199,13 @@ continuity schedule --json   # 机器可读状态
 continuity schedule --strict # 所有门槛完成前返回 30
 ```
 
-当前仓库完成 D1–D9；D5 明确走「校准仍为 provisional」的降级路径，下一步是 D10。
+当前仓库完成 D1–D10；D5 明确走「校准仍为 provisional」的降级路径，下一步是 D11。
 D11 必须有至少一名真实外部用户完成审计，自测演示不算。完整排期见
 [`roadmap/v1-14-day.md`](roadmap/v1-14-day.md)。
+
+公开 CPU 部署前运行 `continuity deploy-check --target modelscope`（或 `huggingface`）。它会阻止
+公开原始日志、不完整的付费视频配置，报告默认零 API 成本路径，并核对公开上传限制。详见
+[`docs/deployment-cost.md`](docs/deployment-cost.md)。
 
 ## 测试
 
@@ -209,7 +213,7 @@ D11 必须有至少一名真实外部用户完成审计，自测演示不算。�
 python -m unittest discover -s . -p 'test_*.py'
 ```
 
-172 项，全部通过。MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**。完整报告见 [`test_report.md`](test_report.md)。
+182 项，全部通过。MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**。完整报告见 [`test_report.md`](test_report.md)。
 
 ## 部署到魔搭创空间
 
@@ -237,7 +241,8 @@ CPU 环境即可，无 GPU 依赖。
 | 文件 | 内容 |
 |---|---|
 | [`architecture.md`](architecture.md) | 架构、状态机、Provider 映射、费用与重试策略 |
-| [`test_report.md`](test_report.md) | 172 项测试的完整报告 |
+| [`test_report.md`](test_report.md) | 182 项测试的完整报告 |
+| [`docs/deployment-cost.md`](docs/deployment-cost.md) | CPU 部署、健康检查、回滚、密钥、资源与成本边界 |
 | [`roadmap/v1-14-day.md`](roadmap/v1-14-day.md) | v1 人读排期与 D5/D7/D11 门槛 |
 | [`roadmap/v1-14-day.json`](roadmap/v1-14-day.json) | 机器可读排期真源 |
 | [`schemas/v1-schedule-v1.schema.json`](schemas/v1-schedule-v1.schema.json) | 排期数据契约 |
