@@ -93,6 +93,18 @@ def _version(obj: dict[str, Any], path: str) -> None:
         )
 
 
+def _normalized_crop(value: Any, path: str) -> None:
+    crop = _array(value, path)
+    if len(crop) != 4:
+        _fail(path, "must contain four normalized numbers")
+    values = [
+        _number(item, f"{path}[{index}]", 0.0, 1.0) for index, item in enumerate(crop)
+    ]
+    left, top, right, bottom = values
+    if left >= right or top >= bottom:
+        _fail(path, "must satisfy left < right and top < bottom")
+
+
 def _validate_rule(
     rule: Any, path: str, seen: dict[str, tuple[str, str, str, str]]
 ) -> None:
@@ -152,6 +164,33 @@ def validate_canon_document(payload: Any) -> dict[str, Any]:
                 f"canon.{group_name}.{entity_id}.rules",
                 seen_rules,
             )
+            if group_name == "characters" and "identity_reference" in entity:
+                config_path = f"canon.characters.{entity_id}.identity_reference"
+                config = _object(entity["identity_reference"], config_path)
+                _required(config, ("asset_path", "rule_id"), config_path)
+                _string(config["asset_path"], f"{config_path}.asset_path")
+                rule_id = _string(config["rule_id"], f"{config_path}.rule_id")
+                if rule_id not in seen_rules:
+                    _fail(
+                        f"{config_path}.rule_id",
+                        f"references unknown rule {rule_id!r}",
+                    )
+                if "crop" in config:
+                    _normalized_crop(config["crop"], f"{config_path}.crop")
+                reject = _number(
+                    config.get("reject_below", 0.45),
+                    f"{config_path}.reject_below",
+                    0.0,
+                    1.0,
+                )
+                review = _number(
+                    config.get("review_below", 0.62),
+                    f"{config_path}.review_below",
+                    0.0,
+                    1.0,
+                )
+                if reject >= review:
+                    _fail(config_path, "reject_below must be lower than review_below")
 
     attempts = _object(canon.get("attempts", {}), "canon.attempts")
     for attempt_id, raw_attempt in attempts.items():
@@ -175,6 +214,19 @@ def validate_canon_document(payload: Any) -> dict[str, Any]:
         _validate_rule_list(
             shot.get("rules", []), f"canon.shots.{shot_id}.rules", seen_rules
         )
+        if "identity_crops" in shot:
+            crop_map = _object(
+                shot["identity_crops"], f"canon.shots.{shot_id}.identity_crops"
+            )
+            for character_id, crop in crop_map.items():
+                if character_id not in characters:
+                    _fail(
+                        f"canon.shots.{shot_id}.identity_crops.{character_id}",
+                        "references an unknown character",
+                    )
+                _normalized_crop(
+                    crop, f"canon.shots.{shot_id}.identity_crops.{character_id}"
+                )
 
     anchor_plan = _object(canon.get("anchor_plan", {}), "canon.anchor_plan")
     reference_library = _object(

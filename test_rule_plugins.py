@@ -56,7 +56,11 @@ class RuleRegistryTests(unittest.TestCase):
         registry = default_rule_registry()
         self.assertEqual(
             [plugin.plugin_id for plugin in registry.plugins],
-            ["builtin.observations", "builtin.attempt-red-pixel"],
+            [
+                "builtin.observations",
+                "builtin.attempt-red-pixel",
+                "builtin.identity-consistency",
+            ],
         )
 
     def test_duplicate_plugin_id_is_rejected(self):

@@ -26,6 +26,38 @@
       },
       "additionalProperties": true
     },
+    "NormalizedCrop": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    "IdentityReference": {
+      "type": "object",
+      "required": ["asset_path", "rule_id"],
+      "properties": {
+        "asset_path": {"type": "string", "minLength": 1},
+        "rule_id": {"type": "string", "minLength": 1},
+        "crop": {"$ref": "#/$defs/NormalizedCrop"},
+        "reject_below": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.45
+        },
+        "review_below": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.62
+        }
+      },
+      "additionalProperties": false
+    },
     "CanonDocument": {
       "type": "object",
       "required": ["meta", "characters", "locations", "shots"],
@@ -47,7 +79,8 @@
               "rules": {
                 "type": "array",
                 "items": {"$ref": "#/$defs/Rule"}
-              }
+              },
+              "identity_reference": {"$ref": "#/$defs/IdentityReference"}
             },
             "additionalProperties": true
           }
@@ -75,6 +108,12 @@
               "rules": {
                 "type": "array",
                 "items": {"$ref": "#/$defs/Rule"}
+              },
+              "identity_crops": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/$defs/NormalizedCrop"
+                }
               }
             },
             "additionalProperties": true

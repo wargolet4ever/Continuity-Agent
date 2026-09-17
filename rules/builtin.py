@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from visual_metrics import image_metrics
 
 from .base import Issue, IssueFactory, RuleContext, RuleRegistry
+from .identity import IdentityConsistencyPlugin
 
 OBSERVATION_RULES = {
     "small_screen": (
@@ -135,4 +136,10 @@ class AttemptRedPixelPlugin:
 
 
 def default_rule_registry() -> RuleRegistry:
-    return RuleRegistry((ObservationRulePlugin(), AttemptRedPixelPlugin()))
+    return RuleRegistry(
+        (
+            ObservationRulePlugin(),
+            AttemptRedPixelPlugin(),
+            IdentityConsistencyPlugin(),
+        )
+    )

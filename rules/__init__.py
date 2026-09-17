@@ -6,9 +6,12 @@ from .builtin import (
     ObservationRulePlugin,
     default_rule_registry,
 )
+from .identity import IdentityConsistencyPlugin, IdentitySimilarity, identity_similarity
 
 __all__ = [
     "AttemptRedPixelPlugin",
+    "IdentityConsistencyPlugin",
+    "IdentitySimilarity",
     "Issue",
     "IssueFactory",
     "ObservationRulePlugin",
@@ -16,4 +19,5 @@ __all__ = [
     "RulePlugin",
     "RuleRegistry",
     "default_rule_registry",
+    "identity_similarity",
 ]
