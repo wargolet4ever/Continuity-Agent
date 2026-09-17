@@ -79,6 +79,25 @@ AI 生成短片没有这个岗位。而循环、闪回、多时间线的片子�
 [`schemas/audit-report-v1.schema.json`](schemas/audit-report-v1.schema.json)，其中的审计结果继续
 复用 [`schemas/continuity-v1.schema.json`](schemas/continuity-v1.schema.json)。
 
+## 六镜头 `continuity film` 演示
+
+验证器后面放了一个刻意做小的**作品集演示**，展示一句话闭环：
+
+```bash
+pip install -e .
+continuity film "一个宇航员在废弃空间站里发现舷窗外站着另一个自己" \
+  --output continuity-film-output
+```
+
+它固定规划六个受 canon 约束的镜头，全程只用一个离线 ffmpeg 夹具供应商；发现演示 blocker
+后，只重生成对应镜头，最多两轮，再把六条最新 take 拼起来。仓库样例只修 Shot 2 和 5：
+总共生成 8 次，没有整片重跑。输出 `film.mp4`、`film-report.json`、`film-report.html`；退出码
+分别是 `0`（通过）、`20`（仍有 blocker）、`21`（流水线失败）、`22`（ffmpeg 不可用）。
+
+夹具审计明确标为 scripted evidence：**不声称视觉模型看过这些色块视频**，也不调用任何付费
+API。可直接查看[六镜头样例](sample_data/film_demo/film-report.html)、
+[机器报告](sample_data/film_demo/film-report.json)与[终端录制](docs/continuity-film-demo.cast)。
+
 ## 快速开始
 
 **不需要任何 API Key。** 不配密钥时全功能可跑，理解与创作步骤走确定性模板并在执行轨迹上标注「本地降级」。
@@ -143,7 +162,7 @@ export LLM_BASE_URL=OpenAI兼容接口的/v1地址
 
 ## 它不做什么
 
-- **不生成视频。** 仓库里有一个 MiniMax Hailuo 适配器，但**默认关闭**，需要 Feature Flag + 独立密钥 + 访问码三重门。完成了真实视频 API 可行性探测，密钥、网络、端点和请求结构验证通过，但生成任务在提交阶段因账户套餐权限被拒绝，因此未产生视频，也未接入正式生成链路。脱敏记录见 [`evidence/`](evidence/)。
+- **不派发生产级 AI 视频生成。** `continuity film` 只生成很小的本地夹具视频。仓库里的 MiniMax Hailuo 适配器仍然**默认关闭**，需要 Feature Flag + 独立密钥 + 访问码三重门。真实 API 可行性探测验证了密钥、网络、端点和请求结构，但提交时因账户套餐权限被拒绝，因此没有把付费生成接入本演示。脱敏记录见 [`evidence/`](evidence/)。
 - 不自动剪辑、不配乐、不做视频续写。
 - **不改写剧情。** canon 由人维护，应用只读。发现冲突时提示人工确认，不自动改。
 - 模型路由只输出决策，不做实时派发。
@@ -176,7 +195,7 @@ export LLM_BASE_URL=OpenAI兼容接口的/v1地址
 python -m unittest discover -s . -p 'test_*.py'
 ```
 
-158 项，全部通过。MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**。完整报告见 [`test_report.md`](test_report.md)。
+165 项，全部通过。MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**。完整报告见 [`test_report.md`](test_report.md)。
 
 ## 部署到魔搭创空间
 
@@ -204,8 +223,9 @@ CPU 环境即可，无 GPU 依赖。
 | 文件 | 内容 |
 |---|---|
 | [`architecture.md`](architecture.md) | 架构、状态机、Provider 映射、费用与重试策略 |
-| [`test_report.md`](test_report.md) | 158 项测试的完整报告 |
+| [`test_report.md`](test_report.md) | 165 项测试的完整报告 |
 | [`schemas/audit-report-v1.schema.json`](schemas/audit-report-v1.schema.json) | 可下载审计报告的数据契约 |
+| [`schemas/film-report-v1.schema.json`](schemas/film-report-v1.schema.json) | 六镜头局部修复报告的数据契约 |
 | [`scoring_gap.md`](scoring_gap.md) | 主动列出的能力缺口 |
 | [`demo_script.md`](demo_script.md) | 60 秒演示脚本 |
 

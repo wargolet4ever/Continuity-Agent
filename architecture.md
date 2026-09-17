@@ -118,6 +118,26 @@ JSON payload 计算 SHA-256。文件名只保留 basename，上传素材本体�
 `take_log.csv` 也不进入报告。外部适配器应以 `schemas/audit-report-v1.schema.json` 为入口，
 再通过其中的 `$ref` 读取既有 `AuditResult` 契约。
 
+## Module 8：六镜头一句话闭环（作品集演示）
+
+`continuity film` 是验证器后面的一条独立 CLI 演示链，不改变 Gradio 主产品的定位：
+
+1. `run_create(..., max_shots=6)` 把一句话扩成恰好六镜，并生成 canon 草案；
+2. `CanonStore.compile_rule_pack()` 把每镜规则写进生成 prompt；
+3. 一次运行只持有一个 `FilmVendor`，禁止混用供应商；
+4. `ClipAuditor` 只把 `regenerate` 级别问题当 blocker；
+5. 下一轮只重生成上一轮的 blocker 镜头，最多两轮；
+6. 全部通过后，ffmpeg 把每镜最新 take 拼成 `film.mp4`。
+
+默认 `fixture-ffmpeg` 供应商只生成很小的本地色块 MP4，`FixtureBlockerAuditor` 读取测试中
+显式声明的问题。报告把证据模式写成 `scripted-fixture-blocker-check`，不声称模型看过画面，
+也不触发 MiniMax 或任何付费 API。真实供应商只需实现同一个 `FilmVendor.generate()` 边界。
+
+`film-report.json` 的运行时校验会拒绝混用供应商、超过两轮、整片重跑，以及任何没有在
+上一轮被判为 blocker 却进入重生成的镜头；外部契约见
+`schemas/film-report-v1.schema.json`。同时输出 `film-report.html`。退出码：`0` 通过、`20`
+仍有 blocker、`21` 流水线失败、`22` ffmpeg 不可用。
+
 ## 日志字段（25 个，v1.2 的 19 个 + 新增 6 个）
 
 新增：`run_mode` `evidence_source` `duration_ms` `retries` `failure_reason` `model_source`
@@ -221,7 +241,7 @@ VIDEO_ACCESS_CODE=<secret>
 
 ## 当前验证状态
 
-- 158 项单元与集成测试通过，其中 MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**
+- 165 项单元与集成测试通过，其中 MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**
 - mock 覆盖：V1 payload 结构、task_id、两次 429 后恢复、file_id、下载地址、
   权限不足不重试、首帧缺失在发请求前拒绝、费用与并发门槛
 - Feature Flag 关闭时，Gradio 组件树不包含视频生成面板，且 `prepare_video` /

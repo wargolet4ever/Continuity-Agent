@@ -283,23 +283,36 @@ def parse_audit_instruction(
     return {"shot_id": shot_id, "observations": hits}
 
 
-def run_create(idea: str, shot_count: int = 5, workdir: str | Path | None = None) -> dict[str, Any]:
+def run_create(
+    idea: str,
+    shot_count: int = 5,
+    workdir: str | Path | None = None,
+    *,
+    max_shots: int = 5,
+    allow_model: bool = True,
+) -> dict[str, Any]:
     trace = Trace()
-    source = model_name() if api_configured() else "本地规则"
+    model_enabled = bool(allow_model and api_configured())
+    source = model_name() if model_enabled else "本地规则"
     idea = (idea or "").strip()
     if not idea:
         raise ValueError("请先输入一句创意。")
+    if not 3 <= int(max_shots) <= 6:
+        raise ValueError("max_shots 必须在 3 到 6 之间。")
+    shot_count = max(3, min(int(max_shots), int(shot_count)))
 
-    with trace.step("① 故事理解", MODEL if api_configured() else LOCAL, source) as step:
-        story, used_model = creator.understand_story(idea, make_model_caller(step))
+    with trace.step("① 故事理解", MODEL if model_enabled else LOCAL, source) as step:
+        caller = make_model_caller(step) if model_enabled else None
+        story, used_model = creator.understand_story(idea, caller)
         if not used_model:
             step.kind = LOCAL
             step.detail = step.detail or "本地降级：关键词结构化，未做语义理解"
     trace.steps[-1]["kind"] = MODEL if used_model else LOCAL
     trace.steps[-1]["source"] = source if used_model else "本地模板"
 
-    with trace.step("② 镜头规划", MODEL if api_configured() else LOCAL, source) as step:
-        shots, used_model = creator.plan_shots(story, shot_count, make_model_caller(step))
+    with trace.step("② 镜头规划", MODEL if model_enabled else LOCAL, source) as step:
+        caller = make_model_caller(step) if model_enabled else None
+        shots, used_model = creator.plan_shots(story, shot_count, caller)
         if not used_model:
             step.detail = step.detail or "本地降级：三幕骨架模板"
     trace.steps[-1]["kind"] = MODEL if used_model else LOCAL
@@ -318,8 +331,9 @@ def run_create(idea: str, shot_count: int = 5, workdir: str | Path | None = None
         )
         step.detail = f"{rule_count} 条可执行规则"
 
-    with trace.step("⑤ 合成视觉 Prompt", MODEL if api_configured() else LOCAL, source) as step:
-        prompts, used_model = creator.synthesize_prompts(story, shots, make_model_caller(step))
+    with trace.step("⑤ 合成视觉 Prompt", MODEL if model_enabled else LOCAL, source) as step:
+        caller = make_model_caller(step) if model_enabled else None
+        prompts, used_model = creator.synthesize_prompts(story, shots, caller)
         if not used_model:
             step.detail = step.detail or "本地降级：模板合成"
     trace.steps[-1]["kind"] = MODEL if used_model else LOCAL
@@ -372,7 +386,7 @@ def run_create(idea: str, shot_count: int = 5, workdir: str | Path | None = None
         "workdir": str(root),
         "trace": trace,
         "generation_status": "AWAITING_EXTERNAL_GENERATION",
-        "api_used": api_configured(),
+        "api_used": model_enabled,
     }
 
 

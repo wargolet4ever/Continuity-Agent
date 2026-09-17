@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://continuity-agent.local/schemas/film-report-v1.schema.json",
+  "title": "Continuity Film repair-loop report v1",
+  "type": "object",
+  "required": [
+    "report_version",
+    "generated_at",
+    "idea",
+    "vendor",
+    "audit",
+    "policy",
+    "summary",
+    "shots",
+    "generation_events",
+    "audit_events",
+    "artifacts"
+  ],
+  "properties": {
+    "report_version": {"const": "1.0"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "idea": {"type": "string", "minLength": 1},
+    "vendor": {"type": "string", "minLength": 1},
+    "audit": {
+      "type": "object",
+      "required": ["mode", "evidence_note"],
+      "properties": {
+        "mode": {"type": "string", "minLength": 1},
+        "evidence_note": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "required": ["shot_count", "single_vendor", "regenerate_blockers_only", "max_repair_rounds"],
+      "properties": {
+        "shot_count": {"const": 6},
+        "single_vendor": {"const": true},
+        "regenerate_blockers_only": {"const": true},
+        "max_repair_rounds": {"type": "integer", "minimum": 0, "maximum": 2}
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": ["status", "initial_generation_count", "total_generation_count", "repair_rounds_used", "repaired_shot_ids", "remaining_blocker_shot_ids", "whole_film_rerun", "film"],
+      "properties": {
+        "status": {"enum": ["PASS", "BLOCKED"]},
+        "initial_generation_count": {"const": 6},
+        "total_generation_count": {"type": "integer", "minimum": 6},
+        "repair_rounds_used": {"type": "integer", "minimum": 0, "maximum": 2},
+        "repaired_shot_ids": {"type": "array", "items": {"type": "string", "pattern": "^[1-6]$"}, "uniqueItems": true},
+        "remaining_blocker_shot_ids": {"type": "array", "items": {"type": "string", "pattern": "^[1-6]$"}, "uniqueItems": true},
+        "whole_film_rerun": {"const": false},
+        "film": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "shots": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["shot_id", "beat", "location", "canon_rule_count", "final_take", "decision", "file"],
+        "properties": {
+          "shot_id": {"type": "string", "pattern": "^[1-6]$"},
+          "beat": {"type": "string"},
+          "location": {"type": "string"},
+          "canon_rule_count": {"type": "integer", "minimum": 1},
+          "final_take": {"type": "integer", "minimum": 1, "maximum": 3},
+          "decision": {"enum": ["PASS", "REGENERATE"]},
+          "file": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "generation_events": {"type": "array", "minItems": 6, "items": {"type": "object"}},
+    "audit_events": {"type": "array", "minItems": 6, "items": {"type": "object"}},
+    "artifacts": {"type": "object"}
+  },
+  "additionalProperties": false
+}

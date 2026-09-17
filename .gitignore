@@ -4,3 +4,5 @@ __pycache__/
 .env
 data/take_log.csv
 ms_deploy.json
+*.egg-info/
+uv.lock

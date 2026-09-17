@@ -15,18 +15,31 @@ from typing import Any
 
 from contracts import CONTRACT_VERSION
 
-# 五拍骨架。少于 5 镜时按 BEAT_SUBSETS 取子集，保证仍是完整的一条因果链。
+# 主 CREATE 用五拍；film 作品集模式追加第六个视觉回声。少镜头时按子集保留因果链。
 BEATS = [
     ("establish", "建立", "交代人物身处何地、正在做什么"),
     ("escalate", "升级", "出现一个他无法忽视的变化"),
     ("turn", "转折", "他做出一个改变处境的动作"),
     ("cost", "代价", "这个动作立刻产生了后果"),
     ("settle", "收束", "留下一个可被重新理解的画面"),
+    ("echo", "回声", "用一个视觉回声证明前面的动作已经改变了世界"),
 ]
-BEAT_SUBSETS = {3: [0, 2, 4], 4: [0, 1, 2, 4], 5: [0, 1, 2, 3, 4]}
+BEAT_SUBSETS = {
+    3: [0, 2, 4],
+    4: [0, 1, 2, 4],
+    5: [0, 1, 2, 3, 4],
+    6: [0, 1, 2, 3, 4, 5],
+}
 
 # 每镜默认时长（秒）。短片节奏：开场稍长，转折最短。
-BEAT_SECONDS = {"establish": 8, "escalate": 7, "turn": 6, "cost": 7, "settle": 9}
+BEAT_SECONDS = {
+    "establish": 8,
+    "escalate": 7,
+    "turn": 6,
+    "cost": 7,
+    "settle": 9,
+    "echo": 8,
+}
 
 CAMERA_BY_BEAT = {
     "establish": "WIDE-固定",
@@ -34,6 +47,7 @@ CAMERA_BY_BEAT = {
     "turn": "CLOSE-固定",
     "cost": "INSERT-固定",
     "settle": "WIDE-固定",
+    "echo": "MEDIUM-固定",
 }
 
 # 与主 canon 同源的通用约束，任何题材都成立。
@@ -148,7 +162,7 @@ def understand_story(idea: str, call_model=None) -> tuple[dict[str, Any], bool]:
 def plan_shots(
     story: dict[str, Any], shot_count: int = 5, call_model=None
 ) -> tuple[list[dict[str, Any]], bool]:
-    shot_count = max(3, min(5, int(shot_count)))
+    shot_count = max(3, min(6, int(shot_count)))
     indices = BEAT_SUBSETS[shot_count]
     skeleton = [BEATS[i] for i in indices]
     locations = story.get("locations") or ["scene_a"]
