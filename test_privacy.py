@@ -13,6 +13,7 @@ import os
 import tempfile
 import unittest
 import uuid
+import zipfile
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -76,13 +77,25 @@ class PublicModePrivacyTests(unittest.TestCase):
 
     def test_audit_response_does_not_carry_log_rows(self):
         """do_audit 的返回值里不得出现任何历史日志。"""
-        # 6 项：人话结论、问题表、详细报告、修订 prompt、执行轨迹、会话状态。
+        # 7 项：人话结论、问题表、详细报告、修订 prompt、执行轨迹、
+        # 本次审计报告路径、会话状态。
         # 这里面**没有日志行**——那才是这条测试要守的东西。
-        self.assertEqual(len(self.returned_a), 6)
+        self.assertEqual(len(self.returned_a), 7)
         blob = json.dumps(self.returned_a[:-1], ensure_ascii=False, default=str)
         self.assertIn(SECRET, blob)                  # A 自己的输入回显是正常的
         self.assertNotIn(SECRET_NOTE, blob)          # 但备注不该回来
         self.assertNotIn(SECRET_FILE, blob)
+
+    def test_downloadable_report_contains_only_the_current_audit(self):
+        """下载包可回显本次输入，但不能夹带日志中的制作备注或历史行。"""
+        report_path = self.returned_a[-2]["value"]
+        with zipfile.ZipFile(report_path) as bundle:
+            blob = "\n".join(
+                bundle.read(name).decode("utf-8") for name in bundle.namelist()
+            )
+        self.assertIn(SECRET, blob)
+        self.assertIn(SECRET_FILE, blob)
+        self.assertNotIn(SECRET_NOTE, blob)
 
     def test_session_b_cannot_read_session_a_via_ui(self):
         """会话 B 走一遍 UI 回调，不得看到 A 的任何输入。"""

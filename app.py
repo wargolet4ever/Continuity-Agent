@@ -14,11 +14,11 @@ import hmac
 import io
 import json
 import os
-import tempfile
 from pathlib import Path
 from typing import Any
 
 import gradio as gr
+
 import orchestrator as orch
 import package
 from analyzer import (
@@ -27,6 +27,7 @@ from analyzer import (
     issues_rows,
     result_markdown,
 )
+from audit_report import build_audit_report, write_audit_report_bundle
 from canon_loader import CanonStore
 from take_log import FIELDS, TakeLog
 from video_audit import (
@@ -112,6 +113,7 @@ def new_session() -> dict[str, Any]:
         "video_task": None,
         "video_reservation": None,
         "last_audit": {},
+        "report_path": None,
     }
 
 
@@ -417,7 +419,7 @@ def do_audit(
 ):
     state = state or new_session()
     store = active_store(state)
-    # 提前退出的分支必须和正常返回**同样长**（6 项），否则 Gradio 会把
+    # 提前退出的分支必须和正常返回**同样长**（7 项），否则 Gradio 会把
     # 返回值错位塞进组件里。
     def _bail(message: str):
         return (
@@ -426,6 +428,7 @@ def do_audit(
             "",
             "",
             [],
+            gr.update(visible=False),
             state,
         )
 
@@ -483,6 +486,14 @@ def do_audit(
         ),
     )
     state["last_audit"] = result
+    report = build_audit_report(
+        result,
+        evidence_source=chain["evidence_source"],
+        evidence_note=chain["evidence_note"],
+        trace=trace,
+        source_filename=filename or (video_sample.path.name if video_sample else ""),
+    )
+    state["report_path"] = write_audit_report_bundle(report)
     # 注意：日志在服务端照常记录，但**不作为返回值**——否则等于把全部
     # 历史记录（含他人的 prompt 与备注）交给任何一个调用者。
     return (
@@ -491,6 +502,7 @@ def do_audit(
         banner + result_markdown(result),
         result["revised_prompt"],
         trace.rows(),
+        gr.update(value=state["report_path"], visible=True),
         state,
     )
 
@@ -553,6 +565,14 @@ def run_demo(name: str, state):
             "未写入生产日志。\n\n"
         )
     )
+    report = build_audit_report(
+        result,
+        evidence_source=chain["evidence_source"],
+        evidence_note=chain["evidence_note"],
+        trace=chain["trace"],
+        source_filename=example_video_path(name).name if sample else "",
+    )
+    state["report_path"] = write_audit_report_bundle(report)
     return (
         text,
         plain_verdict(result, chain["evidence_source"]),
@@ -560,6 +580,7 @@ def run_demo(name: str, state):
         banner + result_markdown(result),
         result["revised_prompt"],
         chain["trace"].rows(),
+        gr.update(value=state["report_path"], visible=True),
         state,
     )
 
@@ -769,6 +790,10 @@ with gr.Blocks(title="Passenger Zero · 连续性引擎", theme=gr.themes.Soft()
             audit_issues = gr.Dataframe(
                 headers=["哪里不对", "怎么修"], interactive=False,
                 wrap=True, label="", visible=False,
+            )
+            audit_report_file = gr.File(
+                label="⬇ 下载审计报告（JSON + Markdown）",
+                visible=False,
             )
             with gr.Accordion("改好后的生成 Prompt", open=False):
                 revised_prompt = gr.Textbox(lines=10, label="", show_label=False)
@@ -999,7 +1024,8 @@ AI 生成短片没有这个岗位。每一镜都是独立的一次生成，模�
     audit_button.click(
         do_audit,
         inputs=audit_inputs,
-        outputs=[audit_head, audit_issues, audit_detail, revised_prompt, audit_trace, session],
+        outputs=[audit_head, audit_issues, audit_detail, revised_prompt, audit_trace,
+                 audit_report_file, session],
     )
     if VIDEO_SUPPORTED:
         audit_video.change(
@@ -1013,7 +1039,7 @@ AI 生成短片没有这个岗位。每一镜都是独立的一次生成，模�
             lambda state, key=key: run_demo(key, state),
             inputs=session,
             outputs=[audit_text, audit_head, audit_issues, audit_detail, revised_prompt,
-                     audit_trace, session],
+                     audit_trace, audit_report_file, session],
         )
         if VIDEO_SUPPORTED:
             button.click(

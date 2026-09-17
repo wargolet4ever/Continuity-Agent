@@ -64,6 +64,21 @@ AI 生成短片没有这个岗位。而循环、闪回、多时间线的片子�
 | `VISUAL AUDIT` | 有图且多模态模型实际查看并逐条核验 |
 | `VIDEO VISUAL AUDIT` | 视频已抽帧，多模态模型跨帧核验 |
 
+## 可下载的审计报告
+
+每次检查完成后都会出现一个 ZIP 下载，方便交给剪辑师或接入后续产线：
+
+| 文件 | 用途 |
+|---|---|
+| `report.md` | 给人看的结论、问题、最小修复、证据边界与执行轨迹 |
+| `report.json` | 带版本号、可由程序读取的完整审计结果 |
+| `manifest.json` | 两份报告文件的 SHA-256 与字节数，可检查文件是否被改动 |
+
+报告包**不会复制上传的图片或视频，也不会包含全局生产日志**。它只记录当前这一次检查的
+源文件名（不含服务器路径）、证据等级、canon 版本、结果和执行轨迹。外部接入契约见
+[`schemas/audit-report-v1.schema.json`](schemas/audit-report-v1.schema.json)，其中的审计结果继续
+复用 [`schemas/continuity-v1.schema.json`](schemas/continuity-v1.schema.json)。
+
 ## 快速开始
 
 **不需要任何 API Key。** 不配密钥时全功能可跑，理解与创作步骤走确定性模板并在执行轨迹上标注「本地降级」。
@@ -161,7 +176,7 @@ export LLM_BASE_URL=OpenAI兼容接口的/v1地址
 python -m unittest discover -s . -p 'test_*.py'
 ```
 
-101 项，全部通过。MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**。完整报告见 [`test_report.md`](test_report.md)。
+158 项，全部通过。MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**。完整报告见 [`test_report.md`](test_report.md)。
 
 ## 部署到魔搭创空间
 
@@ -189,7 +204,8 @@ CPU 环境即可，无 GPU 依赖。
 | 文件 | 内容 |
 |---|---|
 | [`architecture.md`](architecture.md) | 架构、状态机、Provider 映射、费用与重试策略 |
-| [`test_report.md`](test_report.md) | 101 项测试的完整报告 |
+| [`test_report.md`](test_report.md) | 158 项测试的完整报告 |
+| [`schemas/audit-report-v1.schema.json`](schemas/audit-report-v1.schema.json) | 可下载审计报告的数据契约 |
 | [`scoring_gap.md`](scoring_gap.md) | 主动列出的能力缺口 |
 | [`demo_script.md`](demo_script.md) | 60 秒演示脚本 |
 

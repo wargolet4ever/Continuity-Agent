@@ -56,7 +56,7 @@ class VideoAuditTests(unittest.TestCase):
             real_log = app_module.take_log
             app_module.take_log = TakeLog(Path(directory) / "takes.csv")
             try:
-                head, issues, detail, _, trace, state = app_module.do_audit(
+                head, _, detail, _, trace, _, state = app_module.do_audit(
                     "检查 Shot 19：操纵台整体在镜头内发生变形",
                     None,
                     "本地规则（无需 API）",
@@ -85,7 +85,7 @@ class VideoAuditTests(unittest.TestCase):
             real_log = app_module.take_log
             app_module.take_log = TakeLog(Path(directory) / "takes.csv")
             try:
-                head, issues, detail, _, _, state = app_module.do_audit(
+                head, issues, detail, _, _, _, state = app_module.do_audit(
                     "检查 Shot 21：拉杆突然变形，钥匙取出位置错误",
                     None,
                     "本地规则（无需 API）",
@@ -111,7 +111,7 @@ class VideoAuditTests(unittest.TestCase):
             real_log = app_module.take_log
             app_module.take_log = TakeLog(Path(directory) / "takes.csv")
             try:
-                head, issues, _, _, trace, _ = app_module.do_audit(
+                head, issues, _, _, trace, _, _ = app_module.do_audit(
                     "检查 Shot 19",
                     Image.new("RGB", (8, 8)),
                     "本地规则（无需 API）",

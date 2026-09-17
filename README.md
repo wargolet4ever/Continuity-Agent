@@ -63,6 +63,22 @@ This is the part the project cares about most: **you must know how a conclusion 
 
 If you didn't upload anything, the UI says so in plain words rather than letting you assume it looked.
 
+## Downloadable audit reports
+
+Every completed check now exposes a ZIP report for handoff to an editor or a downstream pipeline:
+
+| File | Purpose |
+|---|---|
+| `report.md` | Human-readable decision, findings, minimum fixes, evidence limits, and execution trace |
+| `report.json` | Versioned machine-readable envelope containing the validated `AuditResult` |
+| `manifest.json` | SHA-256 and byte size for both report files |
+
+The bundle does **not** copy the uploaded image or video and never includes the shared production log.
+It records only the current audit's source basename, evidence tier, canon version, result, and trace.
+The external contract is documented by
+[`schemas/audit-report-v1.schema.json`](schemas/audit-report-v1.schema.json); the embedded audit result
+continues to use [`schemas/continuity-v1.schema.json`](schemas/continuity-v1.schema.json).
+
 ## Quick start
 
 **No API key required.** Without one, everything still runs — understanding and planning fall back to deterministic templates, and the execution trace labels the degradation instead of hiding it.
@@ -147,7 +163,7 @@ Private deployments can set `SHOW_RAW_LOGS=1`. **Do not set it on a public insta
 python -m unittest discover -s . -p 'test_*.py'
 ```
 
-101 tests, all passing. MiniMax and multimodal failure paths are entirely mocked — **no external requests, no cost**. Full report in [`test_report.md`](test_report.md).
+158 tests, all passing. MiniMax and multimodal failure paths are entirely mocked — **no external requests, no cost**. Full report in [`test_report.md`](test_report.md).
 
 ## Docs
 
@@ -155,7 +171,8 @@ python -m unittest discover -s . -p 'test_*.py'
 |---|---|
 | [`README.zh-CN.md`](README.zh-CN.md) | 中文文档 |
 | [`architecture.md`](architecture.md) | Architecture, state machine, provider mapping, cost and retry policy |
-| [`test_report.md`](test_report.md) | Full report for all 101 tests |
+| [`test_report.md`](test_report.md) | Full report for all 158 tests |
+| [`schemas/audit-report-v1.schema.json`](schemas/audit-report-v1.schema.json) | Downloadable audit report contract |
 | [`scoring_gap.md`](scoring_gap.md) | Capability gaps, stated openly |
 | [`demo_script.md`](demo_script.md) | 60-second demo script |
 

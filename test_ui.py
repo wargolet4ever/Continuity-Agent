@@ -113,7 +113,7 @@ class UITests(unittest.TestCase):
         for key, decision, rule in [("A", "REGENERATE", "LOC-B06"),
                                     ("B", "REGENERATE", "SHOT-21A")]:
             with self.subTest(demo=key):
-                text, head, issues, detail, revised, trace, state = run_demo(
+                _, head, _, detail, _, trace, report, _ = run_demo(
                     key, new_session()
                 )
                 self.assertIn(PLAIN[decision], head)
@@ -121,6 +121,7 @@ class UITests(unittest.TestCase):
                 self.assertIn(rule, detail)
                 self.assertEqual(len(trace), 4)
                 self.assertIn(orch.EVIDENCE_VIDEO_RULE, detail)
+                self.assertTrue(Path(report["value"]).is_file())
 
     def test_demo_does_not_write_production_log(self):
         before = len(app_module.take_log.rows())
@@ -128,7 +129,7 @@ class UITests(unittest.TestCase):
         self.assertEqual(len(app_module.take_log.rows()), before)
 
     def test_audit_without_image_is_labelled_user_reported(self):
-        head, issues, detail, revised, trace, state = do_audit(
+        head, _, detail, _, _, report, _ = do_audit(
             "检查 Shot 21 的钥匙插槽位置对不对", None, "本地规则（无需 API）",
             new_session(), "即梦", "s21.mp4", "待定", "", "")
         # 面上说人话，并且明说「我没看过画面」
@@ -144,6 +145,7 @@ class UITests(unittest.TestCase):
         label_line = next(l for l in detail.split("\n") if "证据来源：" in l)
         self.assertIn(orch.EVIDENCE_USER_REPORTED, label_line)
         self.assertNotIn(orch.EVIDENCE_VISUAL, label_line)
+        self.assertTrue(Path(report["value"]).is_file())
 
     def test_audit_with_image_is_not_user_reported(self):
         image = Image.new("RGB", (32, 32), (60, 70, 80))
@@ -250,7 +252,7 @@ class WorkflowLinkTests(unittest.TestCase):
         self.assertIn("正在用你刚做的这份规则", note)
 
         # 不只是文案：审查真的换了规则源
-        _, _, detail, _, _, state = do_audit(
+        _, _, detail, _, _, _, state = do_audit(
             "检查 Shot 2", None, "本地规则（无需 API）",
             state, "", "", "待定", "", "",
         )
