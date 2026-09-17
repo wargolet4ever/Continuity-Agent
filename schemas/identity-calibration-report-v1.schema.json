@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://continuity-agent.local/schemas/identity-calibration-report-v1.schema.json",
+  "title": "Continuity Agent Identity Calibration Report v1",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "benchmark_id",
+    "source_kind",
+    "dataset_fingerprint",
+    "status",
+    "status_reasons",
+    "method",
+    "threshold_policy",
+    "current_defaults",
+    "recommended_thresholds",
+    "readiness_minimums",
+    "readiness_quality",
+    "score_distributions",
+    "metrics",
+    "cases",
+    "canon_updated"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "benchmark_id": {"type": "string", "minLength": 1},
+    "source_kind": {"enum": ["real", "synthetic"]},
+    "dataset_fingerprint": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "status": {"enum": ["ready", "provisional"]},
+    "status_reasons": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "method": {"const": "identity_similarity.v1"},
+    "threshold_policy": {
+      "type": "object",
+      "required": ["below_reject", "below_review", "otherwise"],
+      "properties": {
+        "below_reject": {"const": "mismatch"},
+        "below_review": {"const": "ambiguous"},
+        "otherwise": {"const": "match"}
+      },
+      "additionalProperties": false
+    },
+    "current_defaults": {"$ref": "#/$defs/Thresholds"},
+    "recommended_thresholds": {
+      "oneOf": [
+        {"$ref": "#/$defs/Thresholds"},
+        {"type": "null"}
+      ]
+    },
+    "readiness_minimums": {
+      "type": "object",
+      "required": ["calibration", "validation"],
+      "properties": {
+        "calibration": {"$ref": "#/$defs/LabelCounts"},
+        "validation": {"$ref": "#/$defs/LabelCounts"}
+      },
+      "additionalProperties": false
+    },
+    "readiness_quality": {
+      "type": "object",
+      "required": [
+        "minimum_macro_recall",
+        "maximum_validation_critical_errors"
+      ],
+      "properties": {
+        "minimum_macro_recall": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "maximum_validation_critical_errors": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "score_distributions": {
+      "type": "object",
+      "required": ["all", "calibration", "validation"],
+      "properties": {
+        "all": {"$ref": "#/$defs/LabelDistributions"},
+        "calibration": {"$ref": "#/$defs/LabelDistributions"},
+        "validation": {"$ref": "#/$defs/LabelDistributions"}
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["calibration", "validation"],
+          "properties": {
+            "calibration": {"$ref": "#/$defs/Metrics"},
+            "validation": {"$ref": "#/$defs/Metrics"}
+          },
+          "additionalProperties": false
+        },
+        {"type": "null"}
+      ]
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/ScoredCase"}
+    },
+    "canon_updated": {"const": false}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "NullableScore": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "Thresholds": {
+      "type": "object",
+      "required": ["reject_below", "review_below"],
+      "properties": {
+        "reject_below": {"type": "number", "minimum": 0, "maximum": 1},
+        "review_below": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    },
+    "LabelCounts": {
+      "type": "object",
+      "required": ["mismatch", "ambiguous", "match"],
+      "properties": {
+        "mismatch": {"type": "integer", "minimum": 0},
+        "ambiguous": {"type": "integer", "minimum": 0},
+        "match": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "Distribution": {
+      "type": "object",
+      "required": ["count", "min", "p25", "median", "p75", "max"],
+      "properties": {
+        "count": {"type": "integer", "minimum": 0},
+        "min": {"$ref": "#/$defs/NullableScore"},
+        "p25": {"$ref": "#/$defs/NullableScore"},
+        "median": {"$ref": "#/$defs/NullableScore"},
+        "p75": {"$ref": "#/$defs/NullableScore"},
+        "max": {"$ref": "#/$defs/NullableScore"}
+      },
+      "additionalProperties": false
+    },
+    "LabelDistributions": {
+      "type": "object",
+      "required": ["mismatch", "ambiguous", "match"],
+      "properties": {
+        "mismatch": {"$ref": "#/$defs/Distribution"},
+        "ambiguous": {"$ref": "#/$defs/Distribution"},
+        "match": {"$ref": "#/$defs/Distribution"}
+      },
+      "additionalProperties": false
+    },
+    "NullableRecall": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "ConfusionRow": {
+      "type": "object",
+      "required": ["mismatch", "ambiguous", "match"],
+      "properties": {
+        "mismatch": {"type": "integer", "minimum": 0},
+        "ambiguous": {"type": "integer", "minimum": 0},
+        "match": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "Metrics": {
+      "type": "object",
+      "required": [
+        "total",
+        "accuracy",
+        "macro_recall",
+        "critical_errors",
+        "per_label_recall",
+        "confusion"
+      ],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "accuracy": {"$ref": "#/$defs/NullableRecall"},
+        "macro_recall": {"$ref": "#/$defs/NullableRecall"},
+        "critical_errors": {"type": "integer", "minimum": 0},
+        "per_label_recall": {
+          "type": "object",
+          "required": ["mismatch", "ambiguous", "match"],
+          "properties": {
+            "mismatch": {"$ref": "#/$defs/NullableRecall"},
+            "ambiguous": {"$ref": "#/$defs/NullableRecall"},
+            "match": {"$ref": "#/$defs/NullableRecall"}
+          },
+          "additionalProperties": false
+        },
+        "confusion": {
+          "type": "object",
+          "required": ["mismatch", "ambiguous", "match"],
+          "properties": {
+            "mismatch": {"$ref": "#/$defs/ConfusionRow"},
+            "ambiguous": {"$ref": "#/$defs/ConfusionRow"},
+            "match": {"$ref": "#/$defs/ConfusionRow"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "ScoredCase": {
+      "type": "object",
+      "required": ["case_id", "label", "split", "score", "structure", "color", "edges"],
+      "properties": {
+        "case_id": {"type": "string", "minLength": 1},
+        "label": {"enum": ["mismatch", "ambiguous", "match"]},
+        "split": {"enum": ["calibration", "validation"]},
+        "score": {"type": "number", "minimum": 0, "maximum": 1},
+        "structure": {"type": "number", "minimum": 0, "maximum": 1},
+        "color": {"type": "number", "minimum": 0, "maximum": 1},
+        "edges": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    }
+  }
+}
