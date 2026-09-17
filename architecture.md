@@ -138,6 +138,16 @@ JSON payload 计算 SHA-256。文件名只保留 basename，上传素材本体�
 `schemas/film-report-v1.schema.json`。同时输出 `film-report.html`。退出码：`0` 通过、`20`
 仍有 blocker、`21` 流水线失败、`22` ffmpeg 不可用。
 
+## Module 9：可执行的 14 天排期
+
+`roadmap/v1-14-day.json` 是机器真源，`schedule.py` 同时负责运行时结构校验与仓库证据评估；
+外部消费者可按 `schemas/v1-schedule-v1.schema.json` 读取。排期只允许仓库内相对路径，依赖只能
+指向更早的工作日，硬门槛固定为 D5、D7、D11。评估器只检查证据文件，不执行排期里储存的命令。
+
+`continuity schedule` 输出人读状态，`--json` 输出不含本机绝对路径的机器状态，`--strict` 在
+14 天未全部完成时返回 `30`，无效合同返回 `31`。D5 允许显式 provisional fallback；D7 没过
+就不能把 D8 算完成；D11 没有自测或文档替代路径，必须有真实外部用户完成核心审计流程。
+
 ## 日志字段（25 个，v1.2 的 19 个 + 新增 6 个）
 
 新增：`run_mode` `evidence_source` `duration_ms` `retries` `failure_reason` `model_source`
@@ -241,7 +251,7 @@ VIDEO_ACCESS_CODE=<secret>
 
 ## 当前验证状态
 
-- 165 项单元与集成测试通过，其中 MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**
+- 172 项单元与集成测试通过，其中 MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**
 - mock 覆盖：V1 payload 结构、task_id、两次 429 后恢复、file_id、下载地址、
   权限不足不重试、首帧缺失在发请求前拒绝、费用与并发门槛
 - Feature Flag 关闭时，Gradio 组件树不包含视频生成面板，且 `prepare_video` /

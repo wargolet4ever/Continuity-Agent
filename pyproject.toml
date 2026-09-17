@@ -31,6 +31,7 @@ py-modules = [
   "film_pipeline",
   "orchestrator",
   "package",
+  "schedule",
   "video_audit",
   "video_provider",
   "visual_metrics",

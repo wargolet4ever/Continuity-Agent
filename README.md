@@ -179,13 +179,27 @@ Production logs contain user-entered prompts, notes and filenames. A public depl
 
 Private deployments can set `SHOW_RAW_LOGS=1`. **Do not set it on a public instance.**
 
+## Executable 14-day schedule
+
+The v1 plan is a validated repository contract rather than a progress claim written by hand:
+
+```bash
+continuity schedule          # human-readable status
+continuity schedule --json   # adapter-readable status
+continuity schedule --strict # exit 30 until all gates are complete
+```
+
+The current repository completes D1–D9, with D5 explicitly using the provisional-calibration fallback.
+D10 is next. D11 remains incomplete until a real external user completes an audit; a self-run demo does
+not satisfy that gate. See [`roadmap/v1-14-day.md`](roadmap/v1-14-day.md).
+
 ## Tests
 
 ```bash
 python -m unittest discover -s . -p 'test_*.py'
 ```
 
-165 tests, all passing. MiniMax and multimodal failure paths are entirely mocked — **no external requests, no cost**. Full report in [`test_report.md`](test_report.md).
+172 tests, all passing. MiniMax and multimodal failure paths are entirely mocked — **no external requests, no cost**. Full report in [`test_report.md`](test_report.md).
 
 ## Docs
 
@@ -193,7 +207,10 @@ python -m unittest discover -s . -p 'test_*.py'
 |---|---|
 | [`README.zh-CN.md`](README.zh-CN.md) | 中文文档 |
 | [`architecture.md`](architecture.md) | Architecture, state machine, provider mapping, cost and retry policy |
-| [`test_report.md`](test_report.md) | Full report for all 165 tests |
+| [`test_report.md`](test_report.md) | Full report for all 172 tests |
+| [`roadmap/v1-14-day.md`](roadmap/v1-14-day.md) | Human-readable v1 schedule and D5/D7/D11 gates |
+| [`roadmap/v1-14-day.json`](roadmap/v1-14-day.json) | Machine-readable schedule source of truth |
+| [`schemas/v1-schedule-v1.schema.json`](schemas/v1-schedule-v1.schema.json) | Schedule data contract |
 | [`schemas/audit-report-v1.schema.json`](schemas/audit-report-v1.schema.json) | Downloadable audit report contract |
 | [`schemas/film-report-v1.schema.json`](schemas/film-report-v1.schema.json) | Six-shot repair-loop report contract |
 | [`scoring_gap.md`](scoring_gap.md) | Capability gaps, stated openly |

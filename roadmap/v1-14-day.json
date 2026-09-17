@@ -1,0 +1,265 @@
+{
+  "$schema": "../schemas/v1-schedule-v1.schema.json",
+  "schedule_version": "1.0",
+  "title": "Continuity Agent v1 · 14-day execution schedule",
+  "duration_days": 14,
+  "day_labels_are_relative": true,
+  "success_metric": "At least one real external user completes an audit and provides attributable feedback.",
+  "hard_gate_days": [5, 7, 11],
+  "days": [
+    {
+      "day": 1,
+      "title": "Freeze positioning and acceptance",
+      "objective": "Keep the product claim narrow: it judges generated continuity rather than promising production generation.",
+      "tasks": [
+        "Write the one-sentence positioning and four decision outcomes.",
+        "Publish measurable acceptance criteria and explicit capability gaps."
+      ],
+      "deliverables": [
+        {"path": "README.md", "description": "Product positioning and acceptance-facing documentation."},
+        {"path": "scoring_gap.md", "description": "Explicit limits and unsupported quality claims."}
+      ],
+      "depends_on": [],
+      "gate": null
+    },
+    {
+      "day": 2,
+      "title": "Freeze architecture boundaries",
+      "objective": "Separate planning, deterministic continuity rules, auditing, reports, and optional providers.",
+      "tasks": [
+        "Document component ownership and state flow.",
+        "Keep provider credentials and paid generation outside the default path."
+      ],
+      "deliverables": [
+        {"path": "architecture.md", "description": "Architecture, privacy, retry, and provider boundaries."},
+        {"path": "orchestrator.py", "description": "CREATE and AUDIT orchestration boundary."}
+      ],
+      "depends_on": [1],
+      "gate": null
+    },
+    {
+      "day": 3,
+      "title": "Lock public data contracts",
+      "objective": "Make canon inputs and audit outputs versioned and machine-checkable.",
+      "tasks": [
+        "Validate canon and AuditResult at module boundaries.",
+        "Publish JSON Schema without adding runtime dependencies."
+      ],
+      "deliverables": [
+        {"path": "contracts.py", "description": "Dependency-free runtime validators."},
+        {"path": "schemas/continuity-v1.schema.json", "description": "External continuity contract."},
+        {"path": "test_contracts.py", "description": "Contract regression suite."}
+      ],
+      "depends_on": [2],
+      "gate": null
+    },
+    {
+      "day": 4,
+      "title": "Extract the high-confidence rule set",
+      "objective": "Run deterministic rules as plugins and send uncertainty to human review.",
+      "tasks": [
+        "Implement stable rule ordering and scoped compilation.",
+        "Separate pixel, reference, temporal, identity, and human-review rules."
+      ],
+      "deliverables": [
+        {"path": "rules/base.py", "description": "Rule plugin protocol."},
+        {"path": "rules/builtin.py", "description": "Built-in deterministic rules."},
+        {"path": "rules/visual.py", "description": "CPU visual rule implementations."},
+        {"path": "test_rule_plugins.py", "description": "Plugin and ordering regressions."}
+      ],
+      "depends_on": [3],
+      "gate": null
+    },
+    {
+      "day": 5,
+      "title": "Benchmark and calibration gate",
+      "objective": "Ground identity thresholds in separated calibration and validation data, or keep the claim provisional.",
+      "tasks": [
+        "Measure match, ambiguous, and mismatch distributions.",
+        "Reject production-ready threshold claims when real samples are insufficient."
+      ],
+      "deliverables": [
+        {"path": "identity_calibration.py", "description": "Calibration and validation evaluator."},
+        {"path": "benchmarks/identity/README.md", "description": "Dataset protocol and minimum sample requirements."},
+        {"path": "schemas/identity-calibration-report-v1.schema.json", "description": "Calibration report contract."}
+      ],
+      "depends_on": [4],
+      "gate": {
+        "hard": true,
+        "evidence_sets": [
+          {
+            "outcome": "pass",
+            "label": "Real validation split meets the documented readiness threshold.",
+            "paths": ["benchmarks/identity/calibration-report.json"]
+          },
+          {
+            "outcome": "fallback",
+            "label": "Threshold remains explicitly provisional; unsupported score claims stay blocked.",
+            "paths": ["benchmarks/identity/README.md", "scoring_gap.md"]
+          }
+        ],
+        "failure_action": "Reduce the automatic rule set and keep identity in HUMAN REVIEW; do not tune on validation data."
+      }
+    },
+    {
+      "day": 6,
+      "title": "Stabilize ffmpeg ingestion",
+      "objective": "Make CPU video sampling deterministic and degrade cleanly when ffmpeg is unavailable.",
+      "tasks": [
+        "Probe the real ffmpeg executable before exposing video controls.",
+        "Verify ordered frame extraction and no-ffmpeg fallback."
+      ],
+      "deliverables": [
+        {"path": "video_audit.py", "description": "Validated ffmpeg probe and ordered sampling."},
+        {"path": "diagnose.py", "description": "One-command ffmpeg diagnosis."},
+        {"path": "test_ffmpeg_probe.py", "description": "Executable availability regressions."},
+        {"path": "test_frame_extraction.py", "description": "CPU extraction regressions."}
+      ],
+      "depends_on": [5],
+      "gate": null
+    },
+    {
+      "day": 7,
+      "title": "Integration-output gate",
+      "objective": "Provide adapter-readable JSON, a human report, integrity checks, and stable command exit codes before adding a film loop.",
+      "tasks": [
+        "Package one audit without source media or global production logs.",
+        "Expose validated JSON plus human-readable output and stable exit behavior."
+      ],
+      "deliverables": [
+        {"path": "audit_report.py", "description": "Validated single-audit report bundle."},
+        {"path": "schemas/audit-report-v1.schema.json", "description": "External audit report contract."},
+        {"path": "continuity_cli.py", "description": "Stable command entry point and exit codes."}
+      ],
+      "depends_on": [6],
+      "gate": {
+        "hard": true,
+        "evidence_sets": [
+          {
+            "outcome": "pass",
+            "label": "Machine and human outputs plus exit codes are implemented and tested.",
+            "paths": ["audit_report.py", "schemas/audit-report-v1.schema.json", "continuity_cli.py", "test_audit_report.py"]
+          }
+        ],
+        "failure_action": "Cut the one-sentence film loop and reinvest the remaining time in benchmark quality and distribution."
+      }
+    },
+    {
+      "day": 8,
+      "title": "Build the six-shot film loop",
+      "objective": "Demonstrate prompt to canon-constrained shotlist to blocker-only repair without changing the validator's product claim.",
+      "tasks": [
+        "Use exactly one vendor and six shots.",
+        "Regenerate blocker shots only for at most two rounds, then concatenate the latest takes."
+      ],
+      "deliverables": [
+        {"path": "film_pipeline.py", "description": "Offline six-shot repair-loop implementation."},
+        {"path": "schemas/film-report-v1.schema.json", "description": "Repair-loop report contract."},
+        {"path": "sample_data/film_demo/film.mp4", "description": "Reproducible six-shot fixture sample."},
+        {"path": "docs/continuity-film-demo.cast", "description": "Terminal recording."}
+      ],
+      "depends_on": [7],
+      "gate": null
+    },
+    {
+      "day": 9,
+      "title": "Freeze the daily execution schedule",
+      "objective": "Turn the fourteen-day plan and its hard gates into a validated repository contract.",
+      "tasks": [
+        "Encode all days, dependencies, deliverables, fallbacks, and gates.",
+        "Expose current evidence and next work through continuity schedule."
+      ],
+      "deliverables": [
+        {"path": "roadmap/v1-14-day.json", "description": "Machine-readable schedule."},
+        {"path": "roadmap/v1-14-day.md", "description": "Human-readable schedule."},
+        {"path": "schemas/v1-schedule-v1.schema.json", "description": "External schedule contract."},
+        {"path": "schedule.py", "description": "Runtime validator and evidence evaluator."},
+        {"path": "test_schedule.py", "description": "Schedule and gate regressions."}
+      ],
+      "depends_on": [8],
+      "gate": null
+    },
+    {
+      "day": 10,
+      "title": "Deploy with a zero-surprise cost boundary",
+      "objective": "Publish a CPU deployment path, health check, rollback notes, and explicit free-versus-paid cost table.",
+      "tasks": [
+        "Document local and public deployment commands.",
+        "Record resource limits, secrets, cost ceilings, and rollback steps."
+      ],
+      "deliverables": [
+        {"path": "docs/deployment-cost.md", "description": "Deployment, health, rollback, and cost runbook."}
+      ],
+      "depends_on": [9],
+      "gate": null
+    },
+    {
+      "day": 11,
+      "title": "Real external-user gate",
+      "objective": "Get at least one person outside the builder to complete an audit and report what blocked them.",
+      "tasks": [
+        "Send the validator to a real AI-video creator or editor.",
+        "Record consent-safe, attributable usage evidence and the top failure."
+      ],
+      "deliverables": [
+        {"path": "evidence/external-user-feedback.md", "description": "Redacted external-user session and feedback evidence."}
+      ],
+      "depends_on": [10],
+      "gate": {
+        "hard": true,
+        "evidence_sets": [
+          {
+            "outcome": "pass",
+            "label": "At least one real external user completed the core audit flow.",
+            "paths": ["evidence/external-user-feedback.md"]
+          }
+        ],
+        "failure_action": "Stop adding features; spend the remaining time on direct outreach, onboarding friction, and one observed user session."
+      }
+    },
+    {
+      "day": 12,
+      "title": "Fix the observed adoption blocker",
+      "objective": "Use real-user evidence to make one measurable onboarding or workflow improvement.",
+      "tasks": [
+        "Rank feedback by whether it prevents completion of the audit flow.",
+        "Fix the highest-impact blocker and add a regression test."
+      ],
+      "deliverables": [
+        {"path": "docs/external-user-iteration.md", "description": "Observed blocker, fix, and before/after evidence."}
+      ],
+      "depends_on": [11],
+      "gate": null
+    },
+    {
+      "day": 13,
+      "title": "Publish risk lines and portfolio evidence",
+      "objective": "State what v1 will not claim and convert verified work into a concise case study.",
+      "tasks": [
+        "Publish stop conditions and post-v1 backlog boundaries.",
+        "Write the portfolio case around evidence, failures, and saved regeneration."
+      ],
+      "deliverables": [
+        {"path": "docs/risk-cut-lines.md", "description": "Risk register and explicit cut lines."},
+        {"path": "docs/portfolio-case-study.md", "description": "Verified portfolio case study."}
+      ],
+      "depends_on": [12],
+      "gate": null
+    },
+    {
+      "day": 14,
+      "title": "Release v1 and freeze claims",
+      "objective": "Ship one reproducible release whose documentation, tests, demo, and claims agree.",
+      "tasks": [
+        "Run the complete regression suite from a clean environment.",
+        "Publish the changelog and release checklist without upgrading provisional claims."
+      ],
+      "deliverables": [
+        {"path": "CHANGELOG.md", "description": "v1 release notes and verification record."},
+        {"path": "docs/v1-release-checklist.md", "description": "Final release and claim audit."}
+      ],
+      "depends_on": [11, 12, 13],
+      "gate": null
+    }
+  ]
+}
