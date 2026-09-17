@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://continuity-agent.local/schemas/identity-benchmark-v1.schema.json",
+  "title": "Continuity Agent Identity Benchmark v1",
+  "type": "object",
+  "required": ["contract_version", "benchmark_id", "source_kind", "cases"],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "benchmark_id": {"type": "string", "minLength": 1},
+    "source_kind": {"enum": ["real", "synthetic"]},
+    "description": {"type": "string"},
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/IdentityBenchmarkCase"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "NormalizedCrop": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    "IdentityBenchmarkCase": {
+      "type": "object",
+      "required": [
+        "id",
+        "label",
+        "split",
+        "reference_path",
+        "candidate_path"
+      ],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "label": {"enum": ["mismatch", "ambiguous", "match"]},
+        "split": {"enum": ["calibration", "validation"]},
+        "reference_path": {"type": "string", "minLength": 1},
+        "candidate_path": {"type": "string", "minLength": 1},
+        "reference_crop": {"$ref": "#/$defs/NormalizedCrop"},
+        "candidate_crop": {"$ref": "#/$defs/NormalizedCrop"},
+        "character_id": {"type": "string"},
+        "shot_id": {"type": "string"},
+        "notes": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  }
+}
