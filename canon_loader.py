@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable
+from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +23,22 @@ def _dedupe_rules(rules: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
             continue
         seen.add(rule_id)
         result.append(rule)
+    return result
+
+
+def _dedupe_visual_checks(
+    checks: Iterable[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    seen: set[str] = set()
+    result: list[dict[str, Any]] = []
+    for check in checks:
+        if not check.get("rule_id") or not check.get("kind"):
+            continue
+        key = json.dumps(check, ensure_ascii=False, sort_keys=True)
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(check)
     return result
 
 
@@ -112,7 +129,9 @@ class CanonStore:
                 ("audience", "audience_knows_from"),
             ):
                 known_from = fact.get(field)
-                if isinstance(known_from, int) and (known_from == 0 or known_from <= number):
+                if isinstance(known_from, int) and (
+                    known_from == 0 or known_from <= number
+                ):
                     result[subject].append(fact_id)
         return result
 
@@ -153,21 +172,41 @@ class CanonStore:
         location_key, location_known = self.normalize_location(raw_location)
 
         rules: list[dict[str, Any]] = []
+        visual_checks: list[dict[str, Any]] = []
         rules.extend(self.data.get("global_rules", []))
+        visual_checks.extend(self.data.get("visual_checks", []))
         rules.extend(self.data.get("camera", {}).get("rules", []))
+        visual_checks.extend(self.data.get("camera", {}).get("visual_checks", []))
         if location_key in self.data.get("locations", {}):
             rules.extend(self.data["locations"][location_key].get("rules", []))
+            visual_checks.extend(
+                self.data["locations"][location_key].get("visual_checks", [])
+            )
         for character_name in self.characters_for_shot(shot_id):
-            rules.extend(
-                self.data.get("characters", {}).get(character_name, {}).get("rules", [])
-            )
+            character = self.data.get("characters", {}).get(character_name, {})
+            rules.extend(character.get("rules", []))
+            visual_checks.extend(character.get("visual_checks", []))
         if attempt_id:
-            rules.extend(
-                self.data.get("attempts", {}).get(str(attempt_id), {}).get("rules", [])
-            )
+            attempt = self.data.get("attempts", {}).get(str(attempt_id), {})
+            rules.extend(attempt.get("rules", []))
+            visual_checks.extend(attempt.get("visual_checks", []))
         rules.extend(shot.get("rules", []))
+        visual_checks.extend(shot.get("visual_checks", []))
 
         route = self.route(shot_id)
+        compiled_rules = [
+            rule
+            for rule in _dedupe_rules(rules)
+            if shot.get("generation_required", True)
+            and (
+                "only_shots" not in rule
+                or str(int(shot_id)) in {str(s) for s in rule["only_shots"]}
+            )
+            and (
+                "scope_locations" not in rule or location_key in rule["scope_locations"]
+            )
+        ]
+        allowed_rule_ids = {rule["id"] for rule in compiled_rules}
         return {
             "shot_id": str(shot_id),
             "attempt_id": attempt_id,
@@ -185,18 +224,11 @@ class CanonStore:
             "anchor": self.anchor_for(shot_id),
             "routing_tier": route["tier"],
             "routing": route,
-            "rules": [
-                rule
-                for rule in _dedupe_rules(rules)
-                if shot.get("generation_required", True)
-                and (
-                    "only_shots" not in rule
-                    or str(int(shot_id)) in {str(s) for s in rule["only_shots"]}
-                )
-                and (
-                    "scope_locations" not in rule
-                    or location_key in rule["scope_locations"]
-                )
+            "rules": compiled_rules,
+            "visual_checks": [
+                check
+                for check in _dedupe_visual_checks(visual_checks)
+                if check.get("rule_id") in allowed_rule_ids
             ],
         }
 
@@ -268,7 +300,7 @@ class CanonStore:
         # NA-04: later attempts must retain all knowledge carried into earlier ones.
         attempt_state = self.ledger.get("attempt_state", {})
         ordered_attempts = sorted(attempt_state, key=lambda value: int(value))
-        for previous_id, current_id in zip(ordered_attempts, ordered_attempts[1:]):
+        for previous_id, current_id in pairwise(ordered_attempts):
             previous = set(attempt_state[previous_id].get("daniel_enters_knowing", []))
             current = set(attempt_state[current_id].get("daniel_enters_knowing", []))
             missing = sorted(previous - current)
@@ -316,7 +348,11 @@ class CanonStore:
         for mechanism_id, mechanism in self.ledger.get("mechanisms", {}).items():
             shown = mechanism.get("demonstrated_in")
             relied = mechanism.get("relied_on_in")
-            if not isinstance(shown, int) or not isinstance(relied, int) or shown >= relied:
+            if (
+                not isinstance(shown, int)
+                or not isinstance(relied, int)
+                or shown >= relied
+            ):
                 add(
                     "NA-06",
                     f"{mechanism_id}『{mechanism.get('text', '')}』在 Shot {relied} 被依赖，但演示镜头为 {shown}。",

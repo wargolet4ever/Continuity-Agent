@@ -7,6 +7,11 @@ from .builtin import (
     default_rule_registry,
 )
 from .identity import IdentityConsistencyPlugin, IdentitySimilarity, identity_similarity
+from .visual import (
+    VisualContinuityPlugin,
+    reference_similarity,
+    temporal_structure_similarity,
+)
 
 __all__ = [
     "AttemptRedPixelPlugin",
@@ -18,6 +23,9 @@ __all__ = [
     "RuleContext",
     "RulePlugin",
     "RuleRegistry",
+    "VisualContinuityPlugin",
     "default_rule_registry",
     "identity_similarity",
+    "reference_similarity",
+    "temporal_structure_similarity",
 ]

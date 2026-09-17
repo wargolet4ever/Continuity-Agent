@@ -21,6 +21,10 @@ INPUT_MEDIA_KINDS = frozenset({"video", "image_sequence"})
 RESULT_MEDIA_KINDS = frozenset({"text", "image", "image_sequence", "video"})
 EVIDENCE_KINDS = frozenset({"source_frame", "canon_frame", "comparison"})
 ANCHOR_KINDS = frozenset({"chain", "canonical_lookup", "chain_with_crosscheck", "none"})
+VISUAL_CHECK_KINDS = frozenset(
+    {"pixel_range", "reference_similarity", "temporal_stability"}
+)
+PIXEL_METRICS = frozenset({"red_ratio", "brightness"})
 
 
 class ContractError(ValueError):
@@ -133,6 +137,115 @@ def _validate_rule_list(
         _validate_rule(rule, f"{path}[{index}]", seen)
 
 
+def _validate_visual_check(
+    value: Any,
+    path: str,
+    seen_rules: dict[str, tuple[str, str, str, str]],
+) -> None:
+    check = _object(value, path)
+    _required(check, ("kind", "rule_id"), path)
+    kind = _string(check["kind"], f"{path}.kind")
+    if kind not in VISUAL_CHECK_KINDS:
+        _fail(f"{path}.kind", f"must be one of {sorted(VISUAL_CHECK_KINDS)}")
+    rule_id = _string(check["rule_id"], f"{path}.rule_id")
+    if rule_id not in seen_rules:
+        _fail(f"{path}.rule_id", f"references unknown rule {rule_id!r}")
+
+    common = {
+        "kind",
+        "rule_id",
+        "category",
+        "minimal_fix",
+        "confidence",
+    }
+    for field in ("category", "minimal_fix"):
+        if field in check:
+            _string(check[field], f"{path}.{field}")
+    if "confidence" in check:
+        _number(check["confidence"], f"{path}.confidence", 0.0, 1.0)
+
+    if kind == "pixel_range":
+        allowed = common | {
+            "metric",
+            "minimum",
+            "maximum",
+            "statistic",
+            "crop",
+            "requires_confirmation",
+        }
+        _required(check, ("metric",), path)
+        metric = _string(check["metric"], f"{path}.metric")
+        if metric not in PIXEL_METRICS:
+            _fail(f"{path}.metric", f"must be one of {sorted(PIXEL_METRICS)}")
+        if "minimum" not in check and "maximum" not in check:
+            _fail(path, "pixel_range requires minimum and/or maximum")
+        minimum = (
+            _number(check["minimum"], f"{path}.minimum", 0.0, 1.0)
+            if "minimum" in check
+            else None
+        )
+        maximum = (
+            _number(check["maximum"], f"{path}.maximum", 0.0, 1.0)
+            if "maximum" in check
+            else None
+        )
+        if minimum is not None and maximum is not None and minimum > maximum:
+            _fail(path, "minimum must not exceed maximum")
+        statistic = _string(check.get("statistic", "max"), f"{path}.statistic")
+        if statistic not in {"min", "max", "median"}:
+            _fail(f"{path}.statistic", "must be min, max, or median")
+        if "crop" in check:
+            _normalized_crop(check["crop"], f"{path}.crop")
+        if "requires_confirmation" in check:
+            _boolean(check["requires_confirmation"], f"{path}.requires_confirmation")
+    elif kind == "reference_similarity":
+        allowed = common | {
+            "asset_path",
+            "reference_crop",
+            "candidate_crop",
+            "reject_below",
+            "review_below",
+        }
+        _required(check, ("asset_path", "reject_below", "review_below"), path)
+        _string(check["asset_path"], f"{path}.asset_path")
+        for field in ("reference_crop", "candidate_crop"):
+            if field in check:
+                _normalized_crop(check[field], f"{path}.{field}")
+        reject = _number(check["reject_below"], f"{path}.reject_below", 0.0, 1.0)
+        review = _number(check["review_below"], f"{path}.review_below", 0.0, 1.0)
+        if reject >= review:
+            _fail(path, "reject_below must be lower than review_below")
+    else:
+        allowed = common | {
+            "crop",
+            "comparison",
+            "reject_below",
+            "review_below",
+        }
+        _required(check, ("crop", "reject_below", "review_below"), path)
+        _normalized_crop(check["crop"], f"{path}.crop")
+        comparison = _string(check.get("comparison", "adjacent"), f"{path}.comparison")
+        if comparison not in {"adjacent", "first"}:
+            _fail(f"{path}.comparison", "must be adjacent or first")
+        reject = _number(check["reject_below"], f"{path}.reject_below", 0.0, 1.0)
+        review = _number(check["review_below"], f"{path}.review_below", 0.0, 1.0)
+        if reject >= review:
+            _fail(path, "reject_below must be lower than review_below")
+
+    unknown = sorted(set(check) - allowed)
+    if unknown:
+        _fail(path, f"unsupported fields for {kind}: {', '.join(unknown)}")
+
+
+def _validate_visual_check_list(
+    value: Any,
+    path: str,
+    seen_rules: dict[str, tuple[str, str, str, str]],
+) -> None:
+    for index, check in enumerate(_array(value, path)):
+        _validate_visual_check(check, f"{path}[{index}]", seen_rules)
+
+
 def validate_canon_document(payload: Any) -> dict[str, Any]:
     """Validate the stable core of a canon document and return it unchanged."""
 
@@ -150,10 +263,16 @@ def validate_canon_document(payload: Any) -> dict[str, Any]:
         _fail("canon.shots", "must contain at least one shot")
 
     seen_rules: dict[str, tuple[str, str, str, str]] = {}
+    visual_check_groups: list[tuple[Any, str]] = [
+        (canon.get("visual_checks", []), "canon.visual_checks")
+    ]
     _validate_rule_list(canon.get("global_rules", []), "canon.global_rules", seen_rules)
 
     camera = _object(canon.get("camera", {}), "canon.camera")
     _validate_rule_list(camera.get("rules", []), "canon.camera.rules", seen_rules)
+    visual_check_groups.append(
+        (camera.get("visual_checks", []), "canon.camera.visual_checks")
+    )
 
     for group_name, group in (("characters", characters), ("locations", locations)):
         for entity_id, raw_entity in group.items():
@@ -163,6 +282,12 @@ def validate_canon_document(payload: Any) -> dict[str, Any]:
                 entity.get("rules", []),
                 f"canon.{group_name}.{entity_id}.rules",
                 seen_rules,
+            )
+            visual_check_groups.append(
+                (
+                    entity.get("visual_checks", []),
+                    f"canon.{group_name}.{entity_id}.visual_checks",
+                )
             )
             if group_name == "characters" and "identity_reference" in entity:
                 config_path = f"canon.characters.{entity_id}.identity_reference"
@@ -200,6 +325,12 @@ def validate_canon_document(payload: Any) -> dict[str, Any]:
             f"canon.attempts.{attempt_id}.rules",
             seen_rules,
         )
+        visual_check_groups.append(
+            (
+                attempt.get("visual_checks", []),
+                f"canon.attempts.{attempt_id}.visual_checks",
+            )
+        )
 
     for shot_id, raw_shot in shots.items():
         _string(shot_id, "canon.shots key")
@@ -214,6 +345,12 @@ def validate_canon_document(payload: Any) -> dict[str, Any]:
         _validate_rule_list(
             shot.get("rules", []), f"canon.shots.{shot_id}.rules", seen_rules
         )
+        visual_check_groups.append(
+            (
+                shot.get("visual_checks", []),
+                f"canon.shots.{shot_id}.visual_checks",
+            )
+        )
         if "identity_crops" in shot:
             crop_map = _object(
                 shot["identity_crops"], f"canon.shots.{shot_id}.identity_crops"
@@ -227,6 +364,9 @@ def validate_canon_document(payload: Any) -> dict[str, Any]:
                 _normalized_crop(
                     crop, f"canon.shots.{shot_id}.identity_crops.{character_id}"
                 )
+
+    for checks, path in visual_check_groups:
+        _validate_visual_check_list(checks, path, seen_rules)
 
     anchor_plan = _object(canon.get("anchor_plan", {}), "canon.anchor_plan")
     reference_library = _object(

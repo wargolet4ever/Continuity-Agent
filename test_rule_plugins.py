@@ -58,8 +58,8 @@ class RuleRegistryTests(unittest.TestCase):
             [plugin.plugin_id for plugin in registry.plugins],
             [
                 "builtin.observations",
-                "builtin.attempt-red-pixel",
                 "builtin.identity-consistency",
+                "builtin.visual-continuity",
             ],
         )
 

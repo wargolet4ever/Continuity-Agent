@@ -428,6 +428,19 @@
           "check": "不适用于单帧",
           "severity": "human_review"
         }
+      ],
+      "visual_checks": [
+        {
+          "kind": "pixel_range",
+          "rule_id": "LOOP-05B",
+          "metric": "red_ratio",
+          "maximum": 0.35,
+          "statistic": "max",
+          "confidence": 0.76,
+          "requires_confirmation": true,
+          "category": "Loop Divergence",
+          "minimal_fix": "局部调色回冷白，移除红色警报脉冲。"
+        }
       ]
     }
   },
