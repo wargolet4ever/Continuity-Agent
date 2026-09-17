@@ -1,10 +1,10 @@
 # 最终测试报告
 
-## A. 单元与集成测试（172 项，全部通过）
+## A. 单元与集成测试（182 项，全部通过）
 
 以下为首次完整交付时的逐类明细；后续加入的数据契约、规则插件、身份校准、CPU 视觉规则、
-报告产出、六镜头闭环与可执行排期测试均已进入同一条全量回归命令。当前以末尾的
-`Ran 172 tests` 为准。
+报告产出、六镜头闭环、可执行排期与部署预检测试均已进入同一条全量回归命令。当前以末尾的
+`Ran 182 tests` 为准。
 
 ```
 运行时间：2026-09-14T12:18:04+00:00
@@ -116,7 +116,7 @@ test_video_audit.VideoAuditTests  —— 7 项
    ✓ test_shot21_video_routes_all_three_observed_failures
    ✓ test_video_multimodal_429_retries_twice_then_degrades
 
-Ran 172 tests
+Ran 182 tests
 OK
 ```
 
@@ -357,7 +357,7 @@ Exception: Couldn't start the app because
 | 测试 | 断言 |
 |---|---|
 | `test_repository_schedule_has_fourteen_ordered_days_and_exact_gates` | 恰好 D1–D14，硬门槛只能是 D5/D7/D11 |
-| `test_current_repository_is_complete_through_day_nine` | 证据评估为 D1–D9 完成，D5 显式 fallback，下一步 D10 |
+| `test_current_repository_is_complete_through_day_ten` | 证据评估为 D1–D10 完成，D5 显式 fallback，下一步 D11 |
 | `test_external_user_gate_has_no_fallback` | D11 只接受真实外部用户证据，没有自测替代路径 |
 | `test_validator_rejects_path_escape` | 拒绝绝对路径和 `..` 越界证据路径 |
 | `test_json_command_is_machine_readable_and_does_not_leak_absolute_root` | JSON 可解析且不泄露本机仓库绝对路径 |
@@ -365,6 +365,20 @@ Exception: Couldn't start the app because
 | `test_invalid_command_contract_returns_invalid_exit_code` | 无效合同稳定返回 31，不抛 traceback |
 
 排期命令只读取仓库证据，不执行 JSON 中的任务文本。当前状态不会把 D11 或最终发布伪装成完成。
+
+## C11. 部署、成本与公开资源边界（10 项，`test_deployment.py`）
+
+| 覆盖 | 断言 |
+|---|---|
+| 默认公开配置 | CPU 验证器 READY，API 成本为零，视频生成不可付费 |
+| 公开日志 | `SHOW_RAW_LOGS=1` 会阻止部署并返回 40 |
+| 付费视频 | Provider、两项 Secret、1 并发、3 次/日、¥10/日缺一不可 |
+| Secret 安全 | 预检 JSON 不复制 API Key 或访问码值 |
+| 仓库完整性 | `app.py`、canon、requirements 或部署手册缺失会阻止部署 |
+| CLI | JSON 不含仓库绝对路径；不安全状态稳定返回 40 |
+| 图片边界 | 最长边超过 1280px、文件超过 10MB、每批超过 10 张均在分析前拒绝 |
+
+另由既有视频测试继续锁定 20 秒、50MB 与五帧抽样边界。默认预检不发网络请求，也不调用模型。
 
 ## D. 安全检查
 

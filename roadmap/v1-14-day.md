@@ -23,7 +23,7 @@ returns `31`. The schedule command reads files only; it never executes commands 
 | **D7** | Integration output | machine report + human report + exit codes | **Hard gate:** if absent, cut the film loop and reinvest in benchmark/distribution |
 | D8 | Six-shot film loop | working fixture sample + terminal recording | One vendor; blocker shots only; at most two repair rounds |
 | D9 | Executable schedule | JSON + Schema + evaluator + tests | — |
-| D10 | Deployment and cost | health/rollback/cost runbook | — |
+| D10 | Deployment and cost | runbook + executable preflight + public resource limits | — |
 | **D11** | Real external user | redacted completed-session evidence | **Hard gate:** if absent, stop feature work and return to outreach/onboarding |
 | D12 | User-led iteration | top observed blocker fixed + regression | Requires D11 evidence |
 | D13 | Risk and portfolio | cut lines + verified case study | No unsupported launch or quality claims |

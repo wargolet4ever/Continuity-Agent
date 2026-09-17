@@ -28,6 +28,7 @@ py-modules = [
   "continuity_cli",
   "contracts",
   "creator",
+  "deployment",
   "film_pipeline",
   "orchestrator",
   "package",

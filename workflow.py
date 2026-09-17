@@ -43,8 +43,8 @@ def review_after(
 def rank_takes(analyzer, shot, mode, prompt, files, previous=None, following=None):
     if not files:
         raise ValueError("请上传候选图片。")
-    if len(files) > 12:
-        raise ValueError("每批最多 12 张；多模态模式每张都会调用一次 API。")
+    if len(files) > 10:
+        raise ValueError("每批最多 10 张；多模态模式每张都会调用一次 API。")
     results = []
     for item in files:
         path = str(item)

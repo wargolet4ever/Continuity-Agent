@@ -148,6 +148,16 @@ JSON payload 计算 SHA-256。文件名只保留 basename，上传素材本体�
 14 天未全部完成时返回 `30`，无效合同返回 `31`。D5 允许显式 provisional fallback；D7 没过
 就不能把 D8 算完成；D11 没有自测或文档替代路径，必须有真实外部用户完成核心审计流程。
 
+## Module 10：CPU 部署与成本边界
+
+`deployment.py` 把上线前检查做成 `continuity deploy-check`：必需文件、Python 版本、日志目录、
+公开日志开关、ffmpeg 降级、可选多模态费用状态，以及付费视频的 Provider、密钥、并发、日次数和
+¥10 预算上限。报告不输出密钥值或宿主机绝对路径；存在 FAIL 时稳定返回 `40`。
+
+公开图片入口统一限制为每批 10 张、每张 10MB、最长边 1280px，并在审计或 API 编码前拒绝。
+视频仍执行既有 20 秒、50MB、五帧限制。默认 `ENABLE_VIDEO_GENERATION=0` 且不配置 LLM Key，
+因此 CPU 验证链不产生 API 费用；部署、健康检查与回滚流程见 `docs/deployment-cost.md`。
+
 ## 日志字段（25 个，v1.2 的 19 个 + 新增 6 个）
 
 新增：`run_mode` `evidence_source` `duration_ms` `retries` `failure_reason` `model_source`
@@ -251,7 +261,7 @@ VIDEO_ACCESS_CODE=<secret>
 
 ## 当前验证状态
 
-- 172 项单元与集成测试通过，其中 MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**
+- 182 项单元与集成测试通过，其中 MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**
 - mock 覆盖：V1 payload 结构、task_id、两次 429 后恢复、file_id、下载地址、
   权限不足不重试、首帧缺失在发请求前拒绝、费用与并发门槛
 - Feature Flag 关闭时，Gradio 组件树不包含视频生成面板，且 `prepare_video` /

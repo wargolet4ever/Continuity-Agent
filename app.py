@@ -29,6 +29,7 @@ from analyzer import (
 )
 from audit_report import build_audit_report, write_audit_report_bundle
 from canon_loader import CanonStore
+from deployment import validate_public_image, validate_public_image_batch
 from take_log import FIELDS, TakeLog
 from video_audit import (
     VIDEO_SUPPORTED,
@@ -434,6 +435,11 @@ def do_audit(
 
     if image is not None and video is not None:
         return _bail("请在“一张画面”和“一段视频”中只上传一种。")
+    if image is not None:
+        try:
+            validate_public_image(image)
+        except (OSError, ValueError) as exc:
+            return _bail(str(exc))
     video_sample = None
     if video is not None:
         try:
@@ -697,6 +703,7 @@ def refresh_log():
 
 
 def rerun_review(before, image, prompt, observations, previous, following):
+    validate_public_image(image)
     if before and "_reference_snapshot" in before:
         previous, following = before["_reference_snapshot"]
     after, table, status = review_after(
@@ -706,6 +713,7 @@ def rerun_review(before, image, prompt, observations, previous, following):
 
 
 def batch_review(shot, mode, prompt, files, state):
+    validate_public_image_batch(files)
     store = active_store(state or new_session())
     return rank_takes(analyzer_for(store), shot, mode, prompt, files)
 
@@ -763,7 +771,7 @@ with gr.Blocks(title="Passenger Zero · 连续性引擎", theme=gr.themes.Soft()
             # 缺 ffmpeg 时不渲染视频控件——不展示无法使用的能力。
             # 图片审查那一半照常工作。
             with gr.Row():
-                audit_image = gr.Image(type="pil", label="一张画面", height=200)
+                audit_image = gr.Image(type="filepath", label="一张画面", height=200)
                 if VIDEO_SUPPORTED:
                     audit_video = gr.Video(
                         sources=["upload"],
@@ -820,7 +828,7 @@ with gr.Blocks(title="Passenger Zero · 连续性引擎", theme=gr.themes.Soft()
                 )
                 notes_in = gr.Textbox(label="制作备注")
                 gr.Markdown("---\n**重跑后复审**：改完 prompt 在外部重新生成，把新图传进来对比。")
-                after_image = gr.Image(type="pil", label="重跑后的 Take")
+                after_image = gr.Image(type="filepath", label="重跑后的 Take")
                 after_obs = gr.CheckboxGroup(
                     choices=list(OBSERVATION_OPTIONS), label="仅针对新 Take 的人工观察"
                 )
@@ -835,7 +843,7 @@ with gr.Blocks(title="Passenger Zero · 连续性引擎", theme=gr.themes.Soft()
                     file_count="multiple",
                     file_types=[".png", ".jpg", ".jpeg", ".webp"],
                     type="filepath",
-                    label="候选图片（最多 12 张）",
+                    label="候选图片（最多 10 张）",
                 )
                 batch_shot = gr.Dropdown(canon.shot_ids, value="19", label="Shot")
                 batch_button = gr.Button("排序")
