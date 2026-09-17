@@ -8,6 +8,7 @@ from visual_metrics import image_metrics
 
 from .base import Issue, IssueFactory, RuleContext, RuleRegistry
 from .identity import IdentityConsistencyPlugin
+from .visual import VisualContinuityPlugin
 
 OBSERVATION_RULES = {
     "small_screen": (
@@ -139,7 +140,7 @@ def default_rule_registry() -> RuleRegistry:
     return RuleRegistry(
         (
             ObservationRulePlugin(),
-            AttemptRedPixelPlugin(),
             IdentityConsistencyPlugin(),
+            VisualContinuityPlugin(),
         )
     )

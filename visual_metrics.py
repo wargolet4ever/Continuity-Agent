@@ -21,7 +21,11 @@ def image_metrics(value: Any) -> dict[str, float]:
     if image is None:
         return {}
     sample = image.resize((96, 96))
-    pixels = list(sample.getdata())
+    pixels = list(
+        sample.get_flattened_data()
+        if hasattr(sample, "get_flattened_data")
+        else sample.getdata()
+    )
     total = max(1, len(pixels))
     red_pixels = sum(
         1
@@ -43,7 +47,17 @@ def image_similarity(first: Any, second: Any) -> float | None:
     image_a = image_a.resize((32, 32))
     image_b = image_b.resize((32, 32))
     diff = 0
-    for pixel_a, pixel_b in zip(image_a.getdata(), image_b.getdata()):
+    pixels_a = (
+        image_a.get_flattened_data()
+        if hasattr(image_a, "get_flattened_data")
+        else image_a.getdata()
+    )
+    pixels_b = (
+        image_b.get_flattened_data()
+        if hasattr(image_b, "get_flattened_data")
+        else image_b.getdata()
+    )
+    for pixel_a, pixel_b in zip(pixels_a, pixels_b):
         diff += sum(abs(a - b) for a, b in zip(pixel_a, pixel_b))
     similarity = 1 - diff / (32 * 32 * 3 * 255)
     return round(max(0.0, min(1.0, similarity)), 4)
