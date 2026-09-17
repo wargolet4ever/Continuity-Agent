@@ -1,0 +1,439 @@
+{
+  "_readme": "CREATE 模式生成的 canon 草案。结构与成片 canon 一致，可被 CanonStore 载入并跑因果审计。它是骨架，不是成品——视觉规则的密度远低于人工维护的 canon。",
+  "meta": {
+    "contract_version": "1.0",
+    "version": "draft-1",
+    "script_version": "CREATE 草案 · 一个宇航员在废弃",
+    "principle": "每条规则都必须能从一张截图上证伪。",
+    "severity_to_decision": {
+      "local_fix": "可后期覆盖或小范围重绘",
+      "regenerate": "结构性错误，必须重新生成",
+      "human_review": "涉及表演或剧作判断，交人工"
+    }
+  },
+  "film": {
+    "title": "一个宇航员在废弃",
+    "logline": "一个宇航员在废弃空间站里发现舷窗外站着另一个自己",
+    "total_runtime_sec": 45
+  },
+  "characters": {
+    "protagonist": {
+      "rules": [
+        {
+          "id": "DRAFT-CHAR-01",
+          "text": "主角的外貌、服装与体貌特征在所有镜头中完全一致",
+          "check": "与第一镜的基准帧比对面部、发型、服装剪裁与颜色",
+          "severity": "regenerate"
+        }
+      ],
+      "desc": "（本地降级：未解析主角，请在草案中手动补充）"
+    }
+  },
+  "locations": {
+    "一个宇航员在": {
+      "description": "低饱和、冷调、写实｜一个宇航员在",
+      "rules": [
+        {
+          "id": "DRAFT-LOC-01",
+          "text": "不得出现草案未登记的场景",
+          "check": "画面所处空间是否在 locations 清单内",
+          "severity": "regenerate"
+        }
+      ]
+    },
+    "废弃空间站里": {
+      "description": "低饱和、冷调、写实｜废弃空间站里",
+      "rules": [
+        {
+          "id": "DRAFT-LOC-01",
+          "text": "不得出现草案未登记的场景",
+          "check": "画面所处空间是否在 locations 清单内",
+          "severity": "regenerate"
+        }
+      ]
+    }
+  },
+  "camera": {
+    "rules": [
+      {
+        "id": "DRAFT-CAM-01",
+        "text": "同一场景内的左右轴线不得翻转",
+        "check": "主体与关键道具在画面中的左右关系是否与前一镜一致",
+        "severity": "regenerate"
+      },
+      {
+        "id": "DRAFT-CAM-02",
+        "text": "跨镜头共享几何的场景中不做推轨、环绕、升降",
+        "check": "画面是否存在明显的机位位移或旋转",
+        "severity": "regenerate",
+        "note": "镜头一动，模型就会重新编造这个空间。"
+      }
+    ]
+  },
+  "global_rules": [
+    {
+      "id": "DRAFT-TEXT-01",
+      "text": "画面中生成出来的任何可读文字一律后期覆盖，不因此重新生成",
+      "check": "画面中是否存在可读文字",
+      "severity": "local_fix"
+    }
+  ],
+  "attempts": {
+    "01": {
+      "shots": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "rules": []
+    }
+  },
+  "shots": {
+    "1": {
+      "attempt": "01",
+      "duration_sec": 8,
+      "location": "一个宇航员在",
+      "camera": [
+        "WIDE-固定"
+      ],
+      "identity_critical": false,
+      "generation_required": true,
+      "must_show": [
+        "（本地降级模板）交代人物身处何地、正在做什么",
+        "（本地降级模板）建立拍：交代人物身处何地、正在做什么"
+      ],
+      "must_not_show": [
+        "可读文字",
+        "未登记的场景",
+        "机位推拉摇移"
+      ],
+      "note": "交代人物身处何地、正在做什么",
+      "status": "AWAITING_EXTERNAL_GENERATION",
+      "task_id": null,
+      "video_url": null,
+      "aspect_ratio": "16:9",
+      "resolution": "768P",
+      "reference_images": [],
+      "model_strategy": "economy",
+      "prompt": "（本地降级模板）建立拍：交代人物身处何地、正在做什么。主体动作：（本地降级模板）交代人物身处何地、正在做什么。场景：一个宇航员在。低饱和、冷调、写实。WIDE-固定，镜头完全静止，没有推拉摇移。浅景深，写实质感。"
+    },
+    "2": {
+      "attempt": "01",
+      "duration_sec": 7,
+      "location": "废弃空间站里",
+      "camera": [
+        "MEDIUM-固定"
+      ],
+      "identity_critical": false,
+      "generation_required": true,
+      "must_show": [
+        "（本地降级模板）出现一个他无法忽视的变化",
+        "（本地降级模板）升级拍：出现一个他无法忽视的变化"
+      ],
+      "must_not_show": [
+        "可读文字",
+        "未登记的场景",
+        "机位推拉摇移"
+      ],
+      "note": "出现一个他无法忽视的变化",
+      "status": "AWAITING_EXTERNAL_GENERATION",
+      "task_id": null,
+      "video_url": null,
+      "aspect_ratio": "16:9",
+      "resolution": "768P",
+      "reference_images": [],
+      "model_strategy": "economy",
+      "prompt": "（本地降级模板）升级拍：出现一个他无法忽视的变化。主体动作：（本地降级模板）出现一个他无法忽视的变化。场景：废弃空间站里。低饱和、冷调、写实。MEDIUM-固定，镜头完全静止，没有推拉摇移。浅景深，写实质感。"
+    },
+    "3": {
+      "attempt": "01",
+      "duration_sec": 6,
+      "location": "一个宇航员在",
+      "camera": [
+        "CLOSE-固定"
+      ],
+      "identity_critical": true,
+      "generation_required": true,
+      "must_show": [
+        "（本地降级模板）他做出一个改变处境的动作",
+        "（本地降级模板）转折拍：他做出一个改变处境的动作"
+      ],
+      "must_not_show": [
+        "可读文字",
+        "未登记的场景",
+        "机位推拉摇移"
+      ],
+      "note": "他做出一个改变处境的动作",
+      "status": "AWAITING_EXTERNAL_GENERATION",
+      "task_id": null,
+      "video_url": null,
+      "aspect_ratio": "16:9",
+      "resolution": "768P",
+      "reference_images": [],
+      "model_strategy": "primary",
+      "prompt": "（本地降级模板）转折拍：他做出一个改变处境的动作。主体动作：（本地降级模板）他做出一个改变处境的动作。场景：一个宇航员在。低饱和、冷调、写实。CLOSE-固定，镜头完全静止，没有推拉摇移。浅景深，写实质感。"
+    },
+    "4": {
+      "attempt": "01",
+      "duration_sec": 7,
+      "location": "废弃空间站里",
+      "camera": [
+        "INSERT-固定"
+      ],
+      "identity_critical": true,
+      "generation_required": true,
+      "must_show": [
+        "（本地降级模板）这个动作立刻产生了后果",
+        "（本地降级模板）代价拍：这个动作立刻产生了后果"
+      ],
+      "must_not_show": [
+        "可读文字",
+        "未登记的场景",
+        "机位推拉摇移"
+      ],
+      "note": "这个动作立刻产生了后果",
+      "status": "AWAITING_EXTERNAL_GENERATION",
+      "task_id": null,
+      "video_url": null,
+      "aspect_ratio": "16:9",
+      "resolution": "768P",
+      "reference_images": [],
+      "model_strategy": "primary",
+      "prompt": "（本地降级模板）代价拍：这个动作立刻产生了后果。主体动作：（本地降级模板）这个动作立刻产生了后果。场景：废弃空间站里。低饱和、冷调、写实。INSERT-固定，镜头完全静止，没有推拉摇移。浅景深，写实质感。"
+    },
+    "5": {
+      "attempt": "01",
+      "duration_sec": 9,
+      "location": "一个宇航员在",
+      "camera": [
+        "WIDE-固定"
+      ],
+      "identity_critical": false,
+      "generation_required": true,
+      "must_show": [
+        "（本地降级模板）留下一个可被重新理解的画面",
+        "（本地降级模板）收束拍：留下一个可被重新理解的画面"
+      ],
+      "must_not_show": [
+        "可读文字",
+        "未登记的场景",
+        "机位推拉摇移"
+      ],
+      "note": "留下一个可被重新理解的画面",
+      "status": "AWAITING_EXTERNAL_GENERATION",
+      "task_id": null,
+      "video_url": null,
+      "aspect_ratio": "16:9",
+      "resolution": "768P",
+      "reference_images": [],
+      "model_strategy": "economy",
+      "prompt": "（本地降级模板）收束拍：留下一个可被重新理解的画面。主体动作：（本地降级模板）留下一个可被重新理解的画面。场景：一个宇航员在。低饱和、冷调、写实。WIDE-固定，镜头完全静止，没有推拉摇移。浅景深，写实质感。"
+    },
+    "6": {
+      "attempt": "01",
+      "duration_sec": 8,
+      "location": "废弃空间站里",
+      "camera": [
+        "MEDIUM-固定"
+      ],
+      "identity_critical": false,
+      "generation_required": true,
+      "must_show": [
+        "（本地降级模板）用一个视觉回声证明前面的动作已经改变了世界",
+        "（本地降级模板）回声拍：用一个视觉回声证明前面的动作已经改变了世界"
+      ],
+      "must_not_show": [
+        "可读文字",
+        "未登记的场景",
+        "机位推拉摇移"
+      ],
+      "note": "用一个视觉回声证明前面的动作已经改变了世界",
+      "status": "AWAITING_EXTERNAL_GENERATION",
+      "task_id": null,
+      "video_url": null,
+      "aspect_ratio": "16:9",
+      "resolution": "768P",
+      "reference_images": [],
+      "model_strategy": "economy",
+      "prompt": "（本地降级模板）回声拍：用一个视觉回声证明前面的动作已经改变了世界。主体动作：（本地降级模板）用一个视觉回声证明前面的动作已经改变了世界。场景：废弃空间站里。低饱和、冷调、写实。MEDIUM-固定，镜头完全静止，没有推拉摇移。浅景深，写实质感。"
+    }
+  },
+  "identity_critical_shots": [
+    3,
+    4
+  ],
+  "non_identity_shots": [
+    1,
+    2,
+    5,
+    6
+  ],
+  "knowledge_ledger": {
+    "facts": {
+      "F01": {
+        "text": "一个宇航员在废弃空间站里发现舷窗外站着另一个自己",
+        "established_in": 1,
+        "daniel_knows_from": 1,
+        "audience_knows_from": 1
+      },
+      "F02": {
+        "text": "（本地降级：未解析冲突，请在草案中手动补充）",
+        "established_in": 2,
+        "daniel_knows_from": 2,
+        "audience_knows_from": 2
+      }
+    },
+    "attempt_state": {
+      "01": {
+        "shots": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "daniel_enters_knowing": []
+      }
+    },
+    "mechanisms": {}
+  },
+  "anchor_plan": {
+    "reference_library": {
+      "REF_一个宇航员在": {
+        "desc": "一个宇航员在 的空间基准图",
+        "status": "待建立",
+        "blocking": true
+      },
+      "REF_废弃空间站里": {
+        "desc": "废弃空间站里 的空间基准图",
+        "status": "待建立",
+        "blocking": true
+      }
+    },
+    "shots": {
+      "1": {
+        "anchor": "canonical_lookup",
+        "reference": "REF_一个宇航员在",
+        "reason": "切换到另一个场景，没有可续接的链条，必须回查该场景的基准参考图"
+      },
+      "2": {
+        "anchor": "canonical_lookup",
+        "reference": "REF_废弃空间站里",
+        "reason": "切换到另一个场景，没有可续接的链条，必须回查该场景的基准参考图"
+      },
+      "3": {
+        "anchor": "canonical_lookup",
+        "reference": "REF_一个宇航员在",
+        "reason": "切换到另一个场景，没有可续接的链条，必须回查该场景的基准参考图"
+      },
+      "4": {
+        "anchor": "canonical_lookup",
+        "reference": "REF_废弃空间站里",
+        "reason": "切换到另一个场景，没有可续接的链条，必须回查该场景的基准参考图"
+      },
+      "5": {
+        "anchor": "canonical_lookup",
+        "reference": "REF_一个宇航员在",
+        "reason": "切换到另一个场景，没有可续接的链条，必须回查该场景的基准参考图"
+      },
+      "6": {
+        "anchor": "canonical_lookup",
+        "reference": "REF_废弃空间站里",
+        "reason": "切换到另一个场景，没有可续接的链条，必须回查该场景的基准参考图"
+      }
+    }
+  },
+  "routing": {
+    "rule": "identity_critical == true → primary_tier；否则 → economy_tier",
+    "tiers": {
+      "primary_tier": {
+        "purpose": "身份关键镜头",
+        "shots": [
+          3,
+          4
+        ]
+      },
+      "economy_tier": {
+        "purpose": "非身份镜头",
+        "shots": [
+          1,
+          2,
+          5,
+          6
+        ]
+      },
+      "post_only": {
+        "purpose": "不进入生成流程",
+        "shots": []
+      }
+    },
+    "overrides": [],
+    "_scope_honesty": "只输出路由决策，不做实时派发。"
+  },
+  "narrative_audit_rules": {
+    "rules": [
+      {
+        "id": "NA-01",
+        "name": "过早知情",
+        "severity": "ERROR"
+      },
+      {
+        "id": "NA-02",
+        "name": "伏笔未回收",
+        "severity": "WARN"
+      },
+      {
+        "id": "NA-03",
+        "name": "观众落后于主角",
+        "severity": "WARN"
+      },
+      {
+        "id": "NA-04",
+        "name": "循环记忆倒退",
+        "severity": "ERROR"
+      },
+      {
+        "id": "NA-05",
+        "name": "锚点断链",
+        "severity": "ERROR"
+      },
+      {
+        "id": "NA-06",
+        "name": "机制未经演示即被依赖",
+        "severity": "ERROR"
+      },
+      {
+        "id": "NA-07",
+        "name": "事实依赖未应用的后期补丁",
+        "severity": "ERROR"
+      },
+      {
+        "id": "NA-08",
+        "name": "揭示缺少前置事实",
+        "severity": "ERROR"
+      }
+    ]
+  },
+  "post_production_patches_on_locked_shots": [],
+  "reusable_assets": {},
+  "story_facts_not_checkable": [
+    "（本地降级：未解析冲突，请在草案中手动补充）",
+    "低饱和、冷调、写实"
+  ],
+  "decision_policy": {
+    "default_by_severity": true,
+    "always_local_fix": [
+      "DRAFT-TEXT-01"
+    ],
+    "always_regenerate": [
+      "DRAFT-CHAR-01",
+      "DRAFT-CAM-01",
+      "DRAFT-CAM-02"
+    ],
+    "always_human_review": []
+  }
+}

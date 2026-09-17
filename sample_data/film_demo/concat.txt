@@ -1,0 +1,6 @@
+file 'clips/shot-01-take-01.mp4'
+file 'clips/shot-02-take-02.mp4'
+file 'clips/shot-03-take-01.mp4'
+file 'clips/shot-04-take-01.mp4'
+file 'clips/shot-05-take-02.mp4'
+file 'clips/shot-06-take-01.mp4'

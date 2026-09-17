@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "continuity-agent"
+version = "0.1.0"
+description = "Continuity validation and six-shot repair-loop demo for AI films"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+  "Pillow>=10.2.0,<13",
+  "imageio-ffmpeg>=0.5.1,<0.7",
+]
+
+[project.optional-dependencies]
+ui = ["gradio==5.50.0", "pillow-heif>=0.16"]
+
+[project.scripts]
+continuity = "continuity_cli:main"
+
+[tool.setuptools]
+py-modules = [
+  "analyzer",
+  "audit_report",
+  "canon_loader",
+  "continuity_cli",
+  "contracts",
+  "creator",
+  "film_pipeline",
+  "orchestrator",
+  "package",
+  "video_audit",
+  "video_provider",
+  "visual_metrics",
+  "workflow",
+]

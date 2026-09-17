@@ -1,9 +1,10 @@
 # 最终测试报告
 
-## A. 单元与集成测试（158 项，全部通过）
+## A. 单元与集成测试（165 项，全部通过）
 
-以下为首次完整交付时的逐类明细；后续加入的数据契约、规则插件、身份校准、CPU 视觉规则
-与报告产出测试均已进入同一条全量回归命令。当前以末尾的 `Ran 158 tests` 为准。
+以下为首次完整交付时的逐类明细；后续加入的数据契约、规则插件、身份校准、CPU 视觉规则、
+报告产出与六镜头闭环测试均已进入同一条全量回归命令。当前以末尾的
+`Ran 165 tests` 为准。
 
 ```
 运行时间：2026-09-14T12:18:04+00:00
@@ -115,7 +116,7 @@ test_video_audit.VideoAuditTests  —— 7 项
    ✓ test_shot21_video_routes_all_three_observed_failures
    ✓ test_video_multimodal_429_retries_twice_then_degrades
 
-Ran 158 tests in 10.561s
+Ran 165 tests in 10.709s
 OK
 ```
 
@@ -335,6 +336,21 @@ Exception: Couldn't start the app because
 
 报告不复制源媒体，不包含全局生产日志；UI、隐私、视频和无 ffmpeg 降级测试也覆盖了新增
 下载输出，确保 Gradio 返回值没有错位、另一个会话拿不到本次报告内容。
+
+## C9. 六镜头一句话闭环（7 项，`test_film_pipeline.py`）
+
+| 测试 | 断言 |
+|---|---|
+| `test_film_mode_allows_six_without_changing_create_default_cap` | film 模式恰好六镜；原 CREATE 仍最多五镜 |
+| `test_film_planning_stays_offline_even_if_llm_credentials_exist` | 即使环境里已有 LLM Key，film 演示也强制离线，不产生模型调用 |
+| `test_empty_demo_blocker_set_finishes_without_repairs` | 无 blocker 时只生成六次并直接拼接，不制造无意义的修复轮次 |
+| `test_repairs_only_blockers_then_concatenates_six_latest_takes` | 初始六镜；只重做 Shot 2/5；共八次生成；最后成功拼接 |
+| `test_persistent_blocker_stops_after_two_repair_rounds` | blocker 持续存在时两轮硬停，返回退出码 20，不伪造通过影片 |
+| `test_report_validator_rejects_non_blocker_regeneration` | 报告中混入非 blocker 重生成会被运行时契约拒绝 |
+| `test_missing_ffmpeg_has_stable_exit_code` | ffmpeg 缺失返回稳定退出码 22，不抛 traceback |
+
+仓库附带一套实际跑出的六镜头夹具视频、JSON/HTML 报告与 asciinema v2 终端录制。
+夹具审计的证据等级在报告中明确标为 scripted，不声称视觉模型看过画面，也没有外部付费调用。
 
 ## D. 安全检查
 

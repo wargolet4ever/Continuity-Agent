@@ -79,6 +79,28 @@ The external contract is documented by
 [`schemas/audit-report-v1.schema.json`](schemas/audit-report-v1.schema.json); the embedded audit result
 continues to use [`schemas/continuity-v1.schema.json`](schemas/continuity-v1.schema.json).
 
+## Six-shot `continuity film` demo
+
+After the validator, there is one deliberately small **portfolio demo** of the closed loop:
+
+```bash
+pip install -e .
+continuity film "An astronaut sees another version of herself outside an abandoned station" \
+  --output continuity-film-output
+```
+
+It plans exactly six canon-constrained shots, uses one offline ffmpeg fixture vendor, checks declared
+demo blockers, regenerates **only** those shots for at most two rounds, and concatenates the latest
+six takes. The example repairs Shots 2 and 5: eight generations total, never a whole-film rerun.
+It writes `film.mp4`, `film-report.json`, and `film-report.html`; exit codes are `0` (pass), `20`
+(blockers remain), `21` (pipeline failure), and `22` (ffmpeg unavailable).
+
+The fixture auditor is explicitly labelled scripted evidence: it does **not** claim that a visual
+model watched the color clips, and it makes no paid API calls. See the
+[`six-shot sample`](sample_data/film_demo/film-report.html),
+[`machine report`](sample_data/film_demo/film-report.json), and
+[`terminal recording`](docs/continuity-film-demo.cast).
+
 ## Quick start
 
 **No API key required.** Without one, everything still runs — understanding and planning fall back to deterministic templates, and the execution trace labels the degradation instead of hiding it.
@@ -130,7 +152,7 @@ This was built for a 3m22s hard-SF short, not invented and then given a problem 
 
 ## What it does not do
 
-- **It does not generate video.** There is a MiniMax Hailuo adapter in the repo, but it is **off by default** behind three gates (feature flag, separate key, access code). A real feasibility probe was completed — credentials, network, endpoint and request structure all verified — but the submission was rejected on account entitlement, so no video was produced and no generation path was wired in. Sanitized records in [`evidence/`](evidence/).
+- **It does not dispatch production AI-video generation.** `continuity film` renders tiny local fixture clips only. The MiniMax Hailuo adapter remains **off by default** behind three gates (feature flag, separate key, access code). A real feasibility probe verified credentials, network, endpoint and request structure, but submission was rejected on account entitlement, so no paid generation is wired into this demo. Sanitized records in [`evidence/`](evidence/).
 - No editing, no scoring, no video extension.
 - **It does not rewrite your story.** The rulebook is human-maintained; the app only reads it. Conflicts are surfaced for you to confirm, never auto-resolved.
 - Model routing emits a decision only — it does not dispatch.
@@ -163,7 +185,7 @@ Private deployments can set `SHOW_RAW_LOGS=1`. **Do not set it on a public insta
 python -m unittest discover -s . -p 'test_*.py'
 ```
 
-158 tests, all passing. MiniMax and multimodal failure paths are entirely mocked — **no external requests, no cost**. Full report in [`test_report.md`](test_report.md).
+165 tests, all passing. MiniMax and multimodal failure paths are entirely mocked — **no external requests, no cost**. Full report in [`test_report.md`](test_report.md).
 
 ## Docs
 
@@ -171,8 +193,9 @@ python -m unittest discover -s . -p 'test_*.py'
 |---|---|
 | [`README.zh-CN.md`](README.zh-CN.md) | 中文文档 |
 | [`architecture.md`](architecture.md) | Architecture, state machine, provider mapping, cost and retry policy |
-| [`test_report.md`](test_report.md) | Full report for all 158 tests |
+| [`test_report.md`](test_report.md) | Full report for all 165 tests |
 | [`schemas/audit-report-v1.schema.json`](schemas/audit-report-v1.schema.json) | Downloadable audit report contract |
+| [`schemas/film-report-v1.schema.json`](schemas/film-report-v1.schema.json) | Six-shot repair-loop report contract |
 | [`scoring_gap.md`](scoring_gap.md) | Capability gaps, stated openly |
 | [`demo_script.md`](demo_script.md) | 60-second demo script |
 

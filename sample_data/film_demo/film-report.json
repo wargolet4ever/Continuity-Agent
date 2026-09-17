@@ -1,0 +1,221 @@
+{
+  "report_version": "1.0",
+  "generated_at": "2026-09-17T06:53:59+00:00",
+  "idea": "一个宇航员在废弃空间站里发现舷窗外站着另一个自己",
+  "vendor": "fixture-ffmpeg",
+  "audit": {
+    "mode": "scripted-fixture-blocker-check",
+    "evidence_note": "The fixture audit consumes declared test findings; no visual model inspection is claimed."
+  },
+  "policy": {
+    "shot_count": 6,
+    "single_vendor": true,
+    "regenerate_blockers_only": true,
+    "max_repair_rounds": 2
+  },
+  "summary": {
+    "status": "PASS",
+    "initial_generation_count": 6,
+    "total_generation_count": 8,
+    "repair_rounds_used": 1,
+    "repaired_shot_ids": [
+      "2",
+      "5"
+    ],
+    "remaining_blocker_shot_ids": [],
+    "whole_film_rerun": false,
+    "film": "film.mp4"
+  },
+  "shots": [
+    {
+      "shot_id": "1",
+      "beat": "建立",
+      "location": "一个宇航员在",
+      "canon_rule_count": 4,
+      "final_take": 1,
+      "decision": "PASS",
+      "file": "clips/shot-01-take-01.mp4"
+    },
+    {
+      "shot_id": "2",
+      "beat": "升级",
+      "location": "废弃空间站里",
+      "canon_rule_count": 4,
+      "final_take": 2,
+      "decision": "PASS",
+      "file": "clips/shot-02-take-02.mp4"
+    },
+    {
+      "shot_id": "3",
+      "beat": "转折",
+      "location": "一个宇航员在",
+      "canon_rule_count": 4,
+      "final_take": 1,
+      "decision": "PASS",
+      "file": "clips/shot-03-take-01.mp4"
+    },
+    {
+      "shot_id": "4",
+      "beat": "代价",
+      "location": "废弃空间站里",
+      "canon_rule_count": 4,
+      "final_take": 1,
+      "decision": "PASS",
+      "file": "clips/shot-04-take-01.mp4"
+    },
+    {
+      "shot_id": "5",
+      "beat": "收束",
+      "location": "一个宇航员在",
+      "canon_rule_count": 4,
+      "final_take": 2,
+      "decision": "PASS",
+      "file": "clips/shot-05-take-02.mp4"
+    },
+    {
+      "shot_id": "6",
+      "beat": "回声",
+      "location": "废弃空间站里",
+      "canon_rule_count": 4,
+      "final_take": 1,
+      "decision": "PASS",
+      "file": "clips/shot-06-take-01.mp4"
+    }
+  ],
+  "generation_events": [
+    {
+      "round": 0,
+      "shot_id": "1",
+      "attempt": 1,
+      "provider": "fixture-ffmpeg",
+      "file": "clips/shot-01-take-01.mp4"
+    },
+    {
+      "round": 0,
+      "shot_id": "2",
+      "attempt": 1,
+      "provider": "fixture-ffmpeg",
+      "file": "clips/shot-02-take-01.mp4"
+    },
+    {
+      "round": 0,
+      "shot_id": "3",
+      "attempt": 1,
+      "provider": "fixture-ffmpeg",
+      "file": "clips/shot-03-take-01.mp4"
+    },
+    {
+      "round": 0,
+      "shot_id": "4",
+      "attempt": 1,
+      "provider": "fixture-ffmpeg",
+      "file": "clips/shot-04-take-01.mp4"
+    },
+    {
+      "round": 0,
+      "shot_id": "5",
+      "attempt": 1,
+      "provider": "fixture-ffmpeg",
+      "file": "clips/shot-05-take-01.mp4"
+    },
+    {
+      "round": 0,
+      "shot_id": "6",
+      "attempt": 1,
+      "provider": "fixture-ffmpeg",
+      "file": "clips/shot-06-take-01.mp4"
+    },
+    {
+      "round": 1,
+      "shot_id": "2",
+      "attempt": 2,
+      "provider": "fixture-ffmpeg",
+      "file": "clips/shot-02-take-02.mp4"
+    },
+    {
+      "round": 1,
+      "shot_id": "5",
+      "attempt": 2,
+      "provider": "fixture-ffmpeg",
+      "file": "clips/shot-05-take-02.mp4"
+    }
+  ],
+  "audit_events": [
+    {
+      "round": 0,
+      "shot_id": "1",
+      "attempt": 1,
+      "decision": "PASS",
+      "blockers": []
+    },
+    {
+      "round": 0,
+      "shot_id": "2",
+      "attempt": 1,
+      "decision": "REGENERATE",
+      "blockers": [
+        {
+          "rule_id": "DRAFT-CHAR-01",
+          "evidence": "演示夹具声明：主角身份与第一镜不一致。",
+          "minimal_fix": "锁定第一镜身份参考，只重生成 Shot 2。",
+          "severity": "regenerate"
+        }
+      ]
+    },
+    {
+      "round": 0,
+      "shot_id": "3",
+      "attempt": 1,
+      "decision": "PASS",
+      "blockers": []
+    },
+    {
+      "round": 0,
+      "shot_id": "4",
+      "attempt": 1,
+      "decision": "PASS",
+      "blockers": []
+    },
+    {
+      "round": 0,
+      "shot_id": "5",
+      "attempt": 1,
+      "decision": "REGENERATE",
+      "blockers": [
+        {
+          "rule_id": "DRAFT-CAM-02",
+          "evidence": "演示夹具声明：固定空间出现了机位位移。",
+          "minimal_fix": "保持固定机位，只重生成 Shot 5。",
+          "severity": "regenerate"
+        }
+      ]
+    },
+    {
+      "round": 0,
+      "shot_id": "6",
+      "attempt": 1,
+      "decision": "PASS",
+      "blockers": []
+    },
+    {
+      "round": 1,
+      "shot_id": "2",
+      "attempt": 2,
+      "decision": "PASS",
+      "blockers": []
+    },
+    {
+      "round": 1,
+      "shot_id": "5",
+      "attempt": 2,
+      "decision": "PASS",
+      "blockers": []
+    }
+  ],
+  "artifacts": {
+    "canon": "plan/canon_draft.json",
+    "film": "film.mp4",
+    "json_report": "film-report.json",
+    "html_report": "film-report.html"
+  }
+}

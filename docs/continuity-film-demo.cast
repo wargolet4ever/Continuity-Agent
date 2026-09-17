@@ -1,0 +1,11 @@
+{"version":2,"width":110,"height":24,"timestamp":1789628039,"env":{"SHELL":"/bin/bash","TERM":"xterm-256color"},"title":"Continuity Agent · six-shot blocker-only repair demo"}
+[0.2,"o","$ continuity film \"一个宇航员在废弃空间站里发现舷窗外站着另一个自己\" --output sample_data/film_demo\r\n"]
+[0.7,"o","Continuity Film · six-shot demo\r\n"]
+[0.9,"o","[plan] canon-constrained shotlist: 6 shots\r\n"]
+[1.1,"o","[generate] vendor=fixture-ffmpeg generated 6 initial shots\r\n"]
+[1.4,"o","[audit 0] blocker shots: 2, 5\r\n"]
+[1.7,"o","[repair 1] regenerated only: 2, 5\r\n"]
+[2.0,"o","[result] PASS · 8 total generations · whole-film rerun: no\r\n"]
+[2.2,"o","[film] sample_data/film_demo/film.mp4\r\n"]
+[2.4,"o","[report] sample_data/film_demo/film-report.html\r\n"]
+[2.6,"o","[json] sample_data/film_demo/film-report.json\r\n"]
