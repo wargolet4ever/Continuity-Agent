@@ -1,10 +1,10 @@
 # 最终测试报告
 
-## A. 单元与集成测试（165 项，全部通过）
+## A. 单元与集成测试（172 项，全部通过）
 
 以下为首次完整交付时的逐类明细；后续加入的数据契约、规则插件、身份校准、CPU 视觉规则、
-报告产出与六镜头闭环测试均已进入同一条全量回归命令。当前以末尾的
-`Ran 165 tests` 为准。
+报告产出、六镜头闭环与可执行排期测试均已进入同一条全量回归命令。当前以末尾的
+`Ran 172 tests` 为准。
 
 ```
 运行时间：2026-09-14T12:18:04+00:00
@@ -116,7 +116,7 @@ test_video_audit.VideoAuditTests  —— 7 项
    ✓ test_shot21_video_routes_all_three_observed_failures
    ✓ test_video_multimodal_429_retries_twice_then_degrades
 
-Ran 165 tests in 10.709s
+Ran 172 tests
 OK
 ```
 
@@ -351,6 +351,20 @@ Exception: Couldn't start the app because
 
 仓库附带一套实际跑出的六镜头夹具视频、JSON/HTML 报告与 asciinema v2 终端录制。
 夹具审计的证据等级在报告中明确标为 scripted，不声称视觉模型看过画面，也没有外部付费调用。
+
+## C10. 可执行排期（7 项，`test_schedule.py`）
+
+| 测试 | 断言 |
+|---|---|
+| `test_repository_schedule_has_fourteen_ordered_days_and_exact_gates` | 恰好 D1–D14，硬门槛只能是 D5/D7/D11 |
+| `test_current_repository_is_complete_through_day_nine` | 证据评估为 D1–D9 完成，D5 显式 fallback，下一步 D10 |
+| `test_external_user_gate_has_no_fallback` | D11 只接受真实外部用户证据，没有自测替代路径 |
+| `test_validator_rejects_path_escape` | 拒绝绝对路径和 `..` 越界证据路径 |
+| `test_json_command_is_machine_readable_and_does_not_leak_absolute_root` | JSON 可解析且不泄露本机仓库绝对路径 |
+| `test_strict_command_returns_incomplete_exit_code` | 未完成排期时 `--strict` 稳定返回 30 |
+| `test_invalid_command_contract_returns_invalid_exit_code` | 无效合同稳定返回 31，不抛 traceback |
+
+排期命令只读取仓库证据，不执行 JSON 中的任务文本。当前状态不会把 D11 或最终发布伪装成完成。
 
 ## D. 安全检查
 

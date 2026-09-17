@@ -15,6 +15,17 @@ from film_pipeline import (
     FixtureVideoVendor,
     run_film,
 )
+from schedule import (
+    EXIT_SCHEDULE_INCOMPLETE,
+    EXIT_SCHEDULE_INVALID,
+    ScheduleError,
+    evaluate_schedule,
+    load_schedule,
+    render_schedule_status,
+)
+
+REPOSITORY_ROOT = Path(__file__).resolve().parent
+DEFAULT_SCHEDULE = REPOSITORY_ROOT / "roadmap" / "v1-14-day.json"
 
 
 def _shot_ids(value: str) -> set[str]:
@@ -66,6 +77,32 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="print only the final machine-readable summary",
     )
+    schedule = subcommands.add_parser(
+        "schedule",
+        help="show evidence-backed progress through the v1 14-day schedule",
+    )
+    schedule.add_argument(
+        "--file",
+        type=Path,
+        default=DEFAULT_SCHEDULE,
+        help="schedule JSON contract (default: repository v1 schedule)",
+    )
+    schedule.add_argument(
+        "--root",
+        type=Path,
+        default=REPOSITORY_ROOT,
+        help="repository root used to resolve evidence paths",
+    )
+    schedule.add_argument(
+        "--json",
+        action="store_true",
+        help="print only the machine-readable evaluation",
+    )
+    schedule.add_argument(
+        "--strict",
+        action="store_true",
+        help="return 30 until every day and hard gate is complete",
+    )
     return parser
 
 
@@ -111,8 +148,20 @@ def _print_human(run) -> None:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    if args.command != "film":
-        return EXIT_PIPELINE_ERROR
+    if args.command == "schedule":
+        try:
+            evaluation = evaluate_schedule(load_schedule(args.file), args.root)
+        except (ScheduleError, OSError, json.JSONDecodeError) as exc:
+            print(f"continuity schedule: {exc}", file=sys.stderr)
+            return EXIT_SCHEDULE_INVALID
+        if args.json:
+            print(json.dumps(evaluation, ensure_ascii=False, sort_keys=True))
+        else:
+            print(render_schedule_status(evaluation))
+        if args.strict and not evaluation["all_complete"]:
+            return EXIT_SCHEDULE_INCOMPLETE
+        return 0
+
     try:
         vendor = FixtureVideoVendor(blocker_shots=args.demo_blockers)
         run = run_film(

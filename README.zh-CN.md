@@ -189,13 +189,27 @@ export LLM_BASE_URL=OpenAI兼容接口的/v1地址
 
 私有部署可设 `SHOW_RAW_LOGS=1` 放开。**不要在公开空间设置它。**
 
+## 可执行的 14 天排期
+
+v1 计划不是手写进度，而是一份会校验仓库证据的合同：
+
+```bash
+continuity schedule          # 人读状态
+continuity schedule --json   # 机器可读状态
+continuity schedule --strict # 所有门槛完成前返回 30
+```
+
+当前仓库完成 D1–D9；D5 明确走「校准仍为 provisional」的降级路径，下一步是 D10。
+D11 必须有至少一名真实外部用户完成审计，自测演示不算。完整排期见
+[`roadmap/v1-14-day.md`](roadmap/v1-14-day.md)。
+
 ## 测试
 
 ```bash
 python -m unittest discover -s . -p 'test_*.py'
 ```
 
-165 项，全部通过。MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**。完整报告见 [`test_report.md`](test_report.md)。
+172 项，全部通过。MiniMax 与多模态失败路径全部使用 mock，**不产生任何外部请求或费用**。完整报告见 [`test_report.md`](test_report.md)。
 
 ## 部署到魔搭创空间
 
@@ -223,7 +237,10 @@ CPU 环境即可，无 GPU 依赖。
 | 文件 | 内容 |
 |---|---|
 | [`architecture.md`](architecture.md) | 架构、状态机、Provider 映射、费用与重试策略 |
-| [`test_report.md`](test_report.md) | 165 项测试的完整报告 |
+| [`test_report.md`](test_report.md) | 172 项测试的完整报告 |
+| [`roadmap/v1-14-day.md`](roadmap/v1-14-day.md) | v1 人读排期与 D5/D7/D11 门槛 |
+| [`roadmap/v1-14-day.json`](roadmap/v1-14-day.json) | 机器可读排期真源 |
+| [`schemas/v1-schedule-v1.schema.json`](schemas/v1-schedule-v1.schema.json) | 排期数据契约 |
 | [`schemas/audit-report-v1.schema.json`](schemas/audit-report-v1.schema.json) | 可下载审计报告的数据契约 |
 | [`schemas/film-report-v1.schema.json`](schemas/film-report-v1.schema.json) | 六镜头局部修复报告的数据契约 |
 | [`scoring_gap.md`](scoring_gap.md) | 主动列出的能力缺口 |
